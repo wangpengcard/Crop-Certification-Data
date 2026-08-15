@@ -1,0 +1,32 @@
+name: Monthly Variety Data Update
+
+on:
+  schedule:
+    - cron: '0 3 1 * *'   # 每月1日 03:00 UTC (11:00 北京时间)
+  workflow_dispatch:      # 手动触发
+
+permissions:
+  contents: write
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Fetch varieties (incremental)
+        run: python fetch_varieties_v2.py --crops 玉米,大豆,水稻 --since 2010 --incremental
+
+      - name: Commit and push updates
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "chore: 自动更新品种审定数据 ($(date +%Y-%m-%d))"
+          git push
