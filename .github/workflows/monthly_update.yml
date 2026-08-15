@@ -1,9 +1,14 @@
-name: Monthly Variety Data Update
+name: Maize Variety Data Update
 
 on:
   schedule:
-    - cron: '0 3 1 * *'   # 每月1日 03:00 UTC (11:00 北京时间)
-  workflow_dispatch:      # 手动触发
+    - cron: '0 3 1 * *'   # 每月1日 03:00 UTC (11:00 北京时间) → 增量
+  workflow_dispatch:      # 手动触发 → 可选全量/增量
+    inputs:
+      mode:
+        description: '抓取模式: incremental(增量,默认) / full(全量重抓)'
+        required: false
+        default: 'incremental'
 
 permissions:
   contents: write
@@ -20,13 +25,23 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Fetch varieties (incremental)
-        run: python fetch_varieties_v2.py --crops 玉米,大豆,水稻 --since 2010 --incremental
+      - name: Fetch maize varieties
+        # --since 2016：只抓2016起的审定公告；--incremental 按 varieties_玉米.json 已有编号跳过
+        # 全量模式(full)去掉 --incremental，重新抓全部 2016+（用于首次初始化/数据重建）
+        run: |
+          MODE="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.mode || 'incremental' }}"
+          if [ "$MODE" = "full" ]; then
+            echo "模式: 全量重抓"
+            python fetch_varieties_v2.py --crops 玉米 --since 2016
+          else
+            echo "模式: 增量更新"
+            python fetch_varieties_v2.py --crops 玉米 --since 2016 --incremental
+          fi
 
       - name: Commit and push updates
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff --cached --quiet || git commit -m "chore: 自动更新品种审定数据 ($(date +%Y-%m-%d))"
+          git diff --cached --quiet || git commit -m "chore: 更新玉米审定数据 ($(date +%Y-%m-%d) ${{ github.event.inputs.mode || 'schedule' }})"
           git push
