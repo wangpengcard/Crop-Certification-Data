@@ -1,0 +1,2914 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>农业·玉米种植智能辅助 Pro v5.0</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Google Material Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<style>
+:root {
+  --field-green: #166534;
+  --leaf-green: #22c55e;
+  --soil-brown: #7c5c3c;
+  --grain-gold: #eab308;
+  --earth-50: #faf8f4;
+  --earth-100: #f5f1ea;
+  --earth-200: #e7dfd3;
+  --earth-900: #1f1a14;
+}
+body {
+  font-family: 'Noto Sans SC', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: #1f2937;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
+  scroll-behavior: smooth;
+  background:
+    radial-gradient(circle at top left, rgba(124,92,60,0.05), transparent 22%),
+    radial-gradient(circle at 10% 90%, rgba(22,101,52,0.05), transparent 20%),
+    radial-gradient(circle at 95% 20%, rgba(234,179,8,0.04), transparent 20%),
+    linear-gradient(180deg, #f8faf6, #f3f7ef 35%, #eef4ea 100%);
+  background-attachment: fixed;
+}
+.leaf-vein-bg {
+  background-image:
+    url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 180 Q60 100 180 40' stroke='%2316653412' stroke-width='1.2' fill='none'/%3E%3Cpath d='M26 186 Q80 120 176 66' stroke='%2316653410' stroke-width='0.9' fill='none'/%3E%3C/svg%3E");
+  background-size: 220px;
+}
+.grain-noise::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+img.field-media { object-fit: cover; }
+.hero-overlay { background: linear-gradient(135deg, rgba(22,101,52,0.86), rgba(30,58,38,0.88) 55%, rgba(26,46,26,0.88)); }
+.glass {
+  background: rgba(255,255,255,0.78);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.7);
+}
+.subtle-border { border: 1px solid rgba(22,101,52,0.12); }
+.card-surface { background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.92)); }
+.section-band { background: linear-gradient(180deg, #fbfaf7, #f7f4ed 60%, #f4f0e7); }
+.grain-card {
+  background:
+    radial-gradient(circle at top right, rgba(22,101,52,0.03), transparent 40%),
+    linear-gradient(180deg, #fffdf8, #faf8f2 60%, #f8f5ed);
+}
+.accent-line { position: relative; }
+.accent-line::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--grain-gold), #f59e0b 60%, #b45309);
+}
+.brand-shadow { box-shadow: 0 12px 28px rgba(22,101,52,0.12); }
+.card-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.card-lift:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+.tab-btn { transition: all 0.25s ease; border-bottom: 3px solid transparent; }
+.tab-active { color: #14532d; border-bottom-color: #eab308; background: linear-gradient(180deg, rgba(250,248,244,0.95), rgba(248,245,237,0.95)); box-shadow: inset 0 -2px 0 #eab308; }
+.tab-inactive:hover { background: rgba(22,101,52,0.06); }
+.formula-card { transition: all 0.3s ease; }
+.formula-card:hover { transform: translateY(-3px); box-shadow: 0 10px 22px -12px rgba(0,0,0,0.12); }
+.rounded-xl { transition: box-shadow 0.2s ease, transform 0.2s ease; }
+nav { box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+input[type=range]::-webkit-slider-thumb { height: 18px; width: 18px; background: linear-gradient(135deg, #166534, #15803d); border: 2px solid #facc15; }
+input[type=range]::-webkit-slider-runnable-track { height: 5px; background: linear-gradient(90deg, #d1d5db, #e5e7eb); }
+.npk-input { color: #14532d; }
+.status-dot { background: radial-gradient(circle, #22c55e 60%, #16a34a 100%); }
+.soil-level-btn.active { background: linear-gradient(135deg, #166534, #15803d); color: white; border-color: transparent; }
+.tab-btn { transition: all 0.3s; border-bottom: 3px solid transparent; }
+.tab-active { color: #166534; border-bottom-color: #eab308; background-color: #dcfce7; box-shadow: inset 0 -2px 0 #eab308; }
+.tab-inactive:hover { background-color: #f3f4f6; }
+.tab-btn:focus-visible { outline: 2px solid #16a34a; outline-offset: -2px; border-radius: 4px; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #166534; cursor: pointer; margin-top: -6px; }
+input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #d1d5db; border-radius: 2px; }
+input[type=range] { accent-color: #166534; }
+input[type=range]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px rgba(22,163,74,0.35); }
+.npk-input { text-align: center; font-weight: bold; color: #15803d; }
+.status-dot { height: 8px; width: 8px; background-color: #22c55e; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 0 rgba(34,197,94,0.7); animation: pulse-green 2s infinite; }
+@keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.7); } 70% { box-shadow: 0 0 0 6px rgba(34,197,94,0); } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); } }
+.soil-level-btn.active { background-color: #15803d; color: white; border-color: #15803d; }
+.formula-card { transition: all 0.3s ease; }
+.formula-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); }
+.char-circle { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; color: white; margin-right: 12px; flex-shrink: 0; }
+.step-dot { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; color: #fff; flex-shrink: 0; }
+.cal-seg { position: relative; }
+.cal-seg .cal-seg-bar { height: 10px; border-radius: 5px; transition: all 0.3s; }
+.cal-seg.active .cal-seg-bar { box-shadow: 0 0 0 3px #fbbf24; }
+.cal-seg.today::after { content: "▼"; position: absolute; left: 50%; transform: translateX(-50%); top: -16px; color: #dc2626; font-size: 12px; }
+/* 统一 focus 焦点环 */
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid #16a34a; outline-offset: 1px; border-radius: 4px; }
+/* 卡片通用过渡 */
+.rounded-xl { transition: box-shadow 0.2s ease; }
+/* 导航底栏阴影 */
+nav { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+/* 移动端优化：iOS 输入聚焦防自动缩放（覆盖竖屏+横屏）+ 日历时间线纵向化 */
+@media (max-width: 768px) {
+    .cal-seg-bar { height: 6px; border-radius: 3px; }
+    .cal-seg.today::after { top: -14px; }
+    input[type=number], input[type=text], input[type=date], select, textarea { font-size: 16px; }
+    nav .tab-btn { font-size: 0.75rem; padding: 0.5rem 0; }
+}
+</style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+<!-- 网络状态栏 -->
+<div class="bg-green-900 text-green-300 text-xs py-2 px-4 flex justify-between items-center">
+    <div class="flex items-center gap-2"><span class="status-dot"></span><span>系统在线 · 养分平衡法 v5.0</span></div>
+    <div class="font-mono opacity-60 text-[13px]">Pro v5.0</div>
+</div>
+
+<!-- Header -->
+<header class="relative z-40 overflow-hidden text-white hero-overlay grain-noise brand-shadow">
+    <img class="absolute inset-0 w-full h-full opacity-20 field-media" src="images/hero.jpg" alt="田野背景" loading="eager">
+    <div class="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-yellow-400 text-3xl">agriculture</span>
+            <div>
+                <h1 class="text-lg md:text-xl font-bold tracking-wide">农业·玉米种植智能辅助 <span class="text-xs bg-yellow-600 text-white px-1.5 py-0.5 rounded ml-1 align-middle">Pro v5.0</span></h1>
+                <p class="text-[13px] text-green-200 leading-snug">种植技术 · 生育期推荐 · 养分平衡施肥 · 成本精算（仅供参考，不构成建议）</p>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- 导航 -->
+<nav class="glass sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto flex">
+        <button class="tab-active flex-1 py-3 font-bold text-sm md:text-base flex items-center justify-center gap-2 tab-btn" id="tab-planting" onclick="switchTab('planting')">
+            <span class="material-symbols-outlined">grid_on</span> 种植技术
+        </button>
+        <button class="tab-inactive flex-1 py-3 font-bold text-sm md:text-base flex items-center justify-center gap-2 tab-btn" id="tab-protection" onclick="switchTab('protection')">
+            <span class="material-symbols-outlined">pest_control</span> 植保图谱
+        </button>
+        <button class="tab-inactive flex-1 py-3 font-bold text-sm md:text-base flex items-center justify-center gap-2 tab-btn" id="tab-fertilizer" onclick="switchTab('fertilizer')">
+            <span class="material-symbols-outlined">science</span> 施肥与药剂
+        </button>
+        <button class="tab-inactive flex-1 py-3 font-bold text-sm md:text-base flex items-center justify-center gap-2 tab-btn" id="tab-weather" onclick="switchTab('weather')">
+            <span class="material-symbols-outlined">cloud</span> 气象逆境
+        </button>
+        <button class="tab-inactive flex-1 py-3 font-bold text-sm md:text-base flex items-center justify-center gap-2 tab-btn" id="tab-certification" onclick="switchTab('certification')">
+            <span class="material-symbols-outlined">fact_check</span> 审定信息
+        </button>
+    </div>
+</nav>
+
+<main class="flex-grow max-w-7xl mx-auto w-full p-4 md:p-6 space-y-6">
+
+    <!-- ============ Tab 1 种植技术 ============ -->
+    <section class="space-y-6" id="view-planting">
+
+        <!-- 种植目标 + 种植日历 -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+            <div class="md:col-span-4 bg-white rounded-xl shadow p-5 border-t-4 border-green-600">
+                <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 border-b pb-2">
+                    <span class="material-symbols-outlined text-green-600">flag</span> 种植目标设置
+                </h3>
+                <div class="space-y-3">
+                    <!-- 种植区域（全局联动，两级选择） -->
+                    <div class="bg-blue-50 border border-blue-100 rounded p-2">
+                        <label class="text-sm font-bold text-blue-700 block mb-1">📍 种植区域（省 → 县市）</label>
+                        <div class="flex gap-1.5">
+                            <select class="w-2/5 border border-blue-200 rounded p-2 text-sm bg-white" id="provinceSelect" onchange="onProvinceChange(this.value)">
+                                <option value="">省份</option>
+                            </select>
+                            <select class="flex-grow border border-blue-200 rounded p-2 text-sm bg-white" id="townSelect" onchange="setTown(this.value)">
+                                <option value="">县市</option>
+                            </select>
+                        </div>
+                        <p class="text-sm text-blue-500 mt-1" id="townStatus">选择后自动获取实况+8天预报气象数据。</p>
+                    </div>
+                    <div>
+                        <label class="text-sm font-bold text-gray-600 block mb-1">种植用途 / 品种类型</label>
+                        <select class="w-full border border-gray-300 rounded p-2 text-sm bg-white" id="cropType" onchange="updateCropProfile()">
+                            <option value="grain">🌽 籽粒玉米（粮食）</option>
+                            <option value="silage">🌿 青贮玉米（全株饲用）</option>
+                            <option value="fresh">🥬 鲜食玉米（甜/糯）</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-sm font-bold text-gray-600 block mb-1">品种熟期</label>
+                        <select class="w-full border border-gray-300 rounded p-2 text-sm bg-white" id="maturity" onchange="updateCropProfile()">
+                            <option value="variety">🔍 品种查找（匹配审定库自动填入）</option>
+                            <option value="custom">✏️ 自行输入（生育期天数）</option>
+                        </select>
+                    </div>
+                    <div class="hidden space-y-2 bg-yellow-50 border border-yellow-200 rounded p-2" id="customMaturityBox">
+                        <!-- 模式A：品种查找（匹配审定库自动带入生育期/积温） -->
+                        <div class="space-y-2" id="varietySearchMode">
+                            <div>
+                                <label class="text-sm font-bold text-yellow-700 block mb-1">品种名 / 审定编号（选填，支持模糊查询）</label>
+                                <div class="flex gap-1">
+                                    <input class="flex-grow border border-yellow-300 rounded p-2 text-sm bg-white" id="varietyNameInput" placeholder="如：先玉335 / 国审玉20176020（输入部分即可）" list="varietyList" oninput="onVarietyInput(this.value)">
+                                    <datalist id="varietyList"></datalist>
+                                    <button class="bg-yellow-500 text-white px-3 rounded text-xs font-bold" onclick="matchVariety()">匹配</button>
+                                </div>
+                                <div class="hidden mt-1 bg-white border border-yellow-300 rounded shadow max-h-36 overflow-y-auto" id="varietyCandidates"></div>
+                                <p class="text-sm text-yellow-600 mt-1" id="varietyMatchResult"></p>
+                            </div>
+                            <!-- 公告标准对照组（只读，仅保留品种库真实字段） -->
+                            <div class="hidden bg-gray-50 border border-gray-200 rounded p-2 space-y-1.5" id="announceCtrlBox">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-bold text-gray-500">📋 公告标准对照组</span>
+                                    <span class="text-[9px] text-gray-400" id="announceCtrlNo"></span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-1 text-sm">
+                                    <div class="bg-white rounded p-1.5 border border-gray-100">
+                                        <div class="text-gray-400">建议密度（株/亩）</div>
+                                        <div class="font-bold text-gray-700" id="ctrlDensity">—</div>
+                                    </div>
+                                    <div class="bg-white rounded p-1.5 border border-gray-100">
+                                        <div class="text-gray-400">平均产量（kg/亩·14%水）</div>
+                                        <div class="font-bold text-gray-700" id="ctrlAvgYield">—</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 模式B：自行输入（生育期天数必填，积温选填） -->
+                        <div class="hidden space-y-2" id="manualInputMode">
+                            <div>
+                                <label class="text-sm font-bold text-yellow-700 block mb-1">生育期（成熟期天数）<span class="text-red-500">*必填</span></label>
+                                <input class="w-full border border-yellow-300 rounded p-2 text-sm bg-white" id="customDays" onchange="manualCustomChange()" type="number" value="115" min="60" max="180">
+                                <p class="text-[9px] text-yellow-600 mt-0.5">包装使用说明若有可照抄（GB 20464-2024 要求标注），无则填熟期估算值。</p>
+                            </div>
+                            <div>
+                                <label class="text-sm font-bold text-yellow-700 block mb-1">≥10℃活动积温 (℃·d，选填)</label>
+                                <div class="flex gap-1 items-center">
+                                    <input class="flex-grow border border-yellow-300 rounded p-2 text-sm bg-white" id="customGdd" oninput="manualGddChange()" placeholder="如：2500" type="number" min="1500" max="3500">
+                                    <span class="text-[9px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap" id="gddSourceTag"></span>
+                                </div>
+                                <p class="text-[9px] text-yellow-600 mt-0.5">选填。留空时理论轨按 天数×20 估算活动积温（标注「估算」）。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-sm font-bold text-gray-600 block mb-1">播种方式</label>
+                        <select class="w-full border border-gray-300 rounded p-2 text-sm bg-white" id="sowingMode" onchange="updateCropProfile()">
+                            <option value="spring">🌱 春播（东北/北方春玉米区）</option>
+                            <option value="summer">☀️ 夏播（黄淮海夏玉米区）</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-sm font-bold text-gray-600 block mb-1">实际播种日期</label>
+                        <input class="w-full border border-gray-300 rounded p-2 text-sm bg-white" id="sowDate" type="date" onchange="updateCropProfile()">
+                        <p class="text-sm text-gray-400 mt-1">选择实际播种日期</p>
+                    </div>
+                    <div class="bg-green-50 border border-green-100 rounded p-2 text-xs text-green-800 leading-relaxed" id="cropProfileSummary">
+                        未设置播种日期时，种植日历仅展示阶段顺序。
+                    </div>
+                </div>
+            </div>
+
+            <div class="md:col-span-8 bg-white rounded-xl shadow p-5 border-t-4 border-yellow-500">
+                <!-- 播种参数计算器（紧凑版，置于双轨对比上方） -->
+                <div class="mb-4">
+                    <div class="flex items-center justify-between border-b pb-2 mb-3">
+                        <h3 class="font-bold text-gray-800 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-green-600">calculate</span> 播种参数计算器
+                        </h3>
+                        <span class="text-sm font-bold text-green-600" id="densityHint"></span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                        <!-- 输入区 -->
+                        <div class="md:col-span-2 space-y-2">
+                            <div>
+                                <label class="text-xs font-bold text-gray-600 block mb-1">垄型选择</label>
+                                <div class="flex gap-1.5">
+                                    <label class="flex-1 cursor-pointer border-2 border-green-100 rounded-lg p-1.5 text-center hover:border-green-500 has-[:checked]:border-green-600 has-[:checked]:bg-green-50 transition">
+                                        <input checked="" class="hidden" name="ridgeType" onchange="updatePlantingCalc()" type="radio" value="normal">
+                                        <div class="font-bold text-green-800 text-xs">普通垄</div>
+                                    </label>
+                                    <label class="flex-1 cursor-pointer border-2 border-green-100 rounded-lg p-1.5 text-center hover:border-green-500 has-[:checked]:border-green-600 has-[:checked]:bg-green-50 transition">
+                                        <input class="hidden" name="ridgeType" onchange="updatePlantingCalc()" type="radio" value="big">
+                                        <div class="font-bold text-green-800 text-xs">大垄双行</div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-600 block mb-1">平均行距 (cm) <span class="font-normal text-gray-400" id="ridgeHint"></span></label>
+                                <input class="w-full border border-gray-300 rounded p-1.5 text-sm focus:ring-2 focus:ring-green-500 outline-none transition" id="ridgeSpace" oninput="updatePlantingCalc()" type="number" value="60">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-600 block mb-1">目标保苗 (株/亩)</label>
+                                <input class="w-full border border-gray-300 rounded p-1.5 text-sm focus:ring-2 focus:ring-green-500 outline-none transition" id="targetDensity" oninput="updatePlantingCalc()" type="number" value="4500">
+                            </div>
+                        </div>
+                        <!-- 结果区 -->
+                        <div class="md:col-span-3 grid grid-cols-3 gap-2">
+                            <div class="bg-green-900 rounded-lg p-3 text-white flex flex-col justify-center items-center relative overflow-hidden">
+                                <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                                <h4 class="text-green-200 text-[10px] uppercase font-bold tracking-widest mb-1 z-10">理论株距</h4>
+                                <div class="text-3xl font-mono font-bold z-10" id="plantSpaceResult">24.7</div>
+                                <div class="text-xs mt-0.5 z-10">厘米 (cm)</div>
+                            </div>
+                            <div class="bg-white border border-gray-200 rounded-lg p-2 text-center flex flex-col justify-center">
+                                <div class="text-xs text-gray-500 font-bold">推荐播深</div>
+                                <div class="text-xl font-black text-green-700" id="sowDepthResult">4-5</div>
+                                <div class="text-[10px] text-gray-400">cm（壤土/墒好宜浅）</div>
+                            </div>
+                            <div class="bg-white border border-gray-200 rounded-lg p-2 text-center flex flex-col justify-center">
+                                <div class="text-xs text-gray-500 font-bold">精量用种量</div>
+                                <div class="text-xl font-black text-green-700" id="seedAmountResult">2.3</div>
+                                <div class="text-[10px] text-gray-400">kg/亩（千粒重≈400g）</div>
+                            </div>
+                            <div class="md:col-span-3 bg-yellow-50 border border-yellow-200 rounded p-1.5 text-xs text-yellow-800 leading-relaxed" id="sowAdvice"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 栽培要点原文（匹配品种后显示） -->
+                <div class="hidden bg-green-50 border border-green-200 rounded p-3 mb-4" id="plantReqBox">
+                    <div class="text-xs font-bold text-green-700 mb-1">🌱 品种栽培技术要点（公告原文）</div>
+                    <div class="text-sm text-green-800 leading-relaxed whitespace-pre-wrap" id="plantReqText"></div>
+                </div>
+
+                <!-- 双轨生育期对比（理论 vs 实际） -->
+                <div class="border-t-4 border-cyan-600 bg-white rounded-xl shadow overflow-hidden">
+                    <div class="p-3 bg-cyan-50 border-b border-cyan-100 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-cyan-700">compare_arrows</span>
+                        <h3 class="font-bold text-cyan-800 text-sm">生育期双轨对比 · 理论 vs 实际</h3>
+                        <span class="text-sm text-cyan-500 ml-auto" id="dualTrackStatus">选择品种+播种日期+种植区域后自动评估</span>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex flex-col md:flex-row gap-1.5 mb-2" id="dualBarTheory"></div>
+                        <div class="flex flex-col md:flex-row gap-1.5 mb-1 text-sm text-gray-400" id="dualLabelsTheory"></div>
+                        <div class="text-sm text-gray-400 mb-3">▲ 理论轨（品种积温预算）</div>
+                        <div class="flex flex-col md:flex-row gap-1.5 mb-2" id="dualBarActual"></div>
+                        <div class="flex flex-col md:flex-row gap-1.5 mb-1 text-sm text-gray-400" id="dualLabelsActual"></div>
+                        <div class="text-sm text-gray-400 mb-4">▼ 实际轨（实况积温 + 8天预报，不外推）</div>
+                        <div class="space-y-4">
+                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                                <div class="text-sm font-bold text-gray-600 mb-2">📊 积温进度</div>
+                                <div class="flex items-center gap-3 mb-1">
+                                    <span class="text-sm text-gray-500 w-16">实际累计</span>
+                                    <div class="flex-grow bg-gray-200 rounded h-3 overflow-hidden"><div class="bg-cyan-500 h-full rounded" id="gddActualBar" style="width:0%"></div></div>
+                                    <span class="text-xs font-mono font-bold text-cyan-700" id="gddActualNum">0</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-sm text-gray-500 w-16">理论预算</span>
+                                    <div class="flex-grow bg-gray-200 rounded h-3 overflow-hidden"><div class="bg-yellow-500 h-full rounded" id="gddTargetBar" style="width:0%"></div></div>
+                                    <span class="text-xs font-mono font-bold text-yellow-700" id="gddTargetNum">0</span>
+                                </div>
+                                <div class="text-[13px] text-gray-500 mt-2 leading-relaxed" id="gddSummary"></div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                                <div class="text-sm font-bold text-gray-600 mb-2">🌱 阶段偏差与植保措施</div>
+                                <div class="text-[13px] text-gray-600 leading-relaxed" id="deviationSummary">输入播种日期后，对比各阶段实际到达 vs 理论日期。</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 技术流程 -->
+        <div class="bg-white rounded-xl shadow overflow-hidden border-t-4 border-blue-500">
+            <div class="p-4 bg-blue-50 border-b border-blue-100 flex items-center gap-2">
+                <span class="material-symbols-outlined text-blue-700">route</span>
+                <h2 class="font-bold text-blue-800 text-lg">玉米种植全流程技术要点</h2>
+                <span class="text-sm text-blue-500 ml-auto">按实际种植规律排序 · 点击环节查看详情</span>
+            </div>
+            <div class="p-6">
+                <div class="flex flex-wrap gap-2 mb-5" id="processSteps"></div>
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4" id="processDetail"></div>
+            </div>
+        </div>
+
+        <!-- 整地建议 -->
+        <div class="bg-white rounded-xl shadow overflow-hidden border-t-4 border-yellow-500">
+            <div class="p-4 bg-yellow-50 border-b border-yellow-100 flex items-center gap-2">
+                <span class="material-symbols-outlined text-yellow-700">stars</span>
+                <h2 class="font-bold text-yellow-800 text-lg">整地建议</h2>
+            </div>
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="formula-card bg-white p-3 rounded-lg border border-gray-100 flex items-start">
+                    <div class="char-circle bg-blue-600 text-xl">深</div>
+                    <div><h4 class="font-bold text-gray-800">30厘米深翻</h4><p class="text-xs text-gray-500 mt-1">强抗旱、抗倒伏。打破犁底层，增加土壤蓄水能力。</p></div>
+                </div>
+                <div class="formula-card bg-white p-3 rounded-lg border border-gray-100 flex items-start">
+                    <div class="char-circle bg-green-600 text-xl">松</div>
+                    <div><h4 class="font-bold text-gray-800">土壤疏松</h4><p class="text-xs text-gray-500 mt-1">出苗快，苗壮，扎根深，坐苗牢。利于根系下扎。</p></div>
+                </div>
+                <div class="formula-card bg-white p-3 rounded-lg border border-gray-100 flex items-start">
+                    <div class="char-circle bg-yellow-600 text-xl">平</div>
+                    <div><h4 class="font-bold text-gray-800">地平如镜</h4><p class="text-xs text-gray-500 mt-1">保障播种质量，下种均匀一致。防止播种深浅不一。</p></div>
+                </div>
+                <div class="formula-card bg-white p-3 rounded-lg border border-gray-100 flex items-start">
+                    <div class="char-circle bg-purple-600 text-xl">碎</div>
+                    <div><h4 class="font-bold text-gray-800">土碎如面</h4><p class="text-xs text-gray-500 mt-1">杜绝压种、压苗现象，苗情一致。增加种子土壤接触。</p></div>
+                </div>
+                <div class="formula-card bg-white p-3 rounded-lg border border-gray-100 flex items-start">
+                    <div class="char-circle bg-cyan-600 text-xl">墒</div>
+                    <div><h4 class="font-bold text-gray-800">底墒充足</h4><p class="text-xs text-gray-500 mt-1">墒情好，出苗快，耐旱，齐全匀壮。湿而不粘。</p></div>
+                </div>
+                <div class="formula-card bg-gray-50 p-3 rounded-lg border border-gray-200 flex items-center justify-center text-center">
+                    <p class="text-sm font-bold text-gray-700 italic">“深翻一铲，土碎如面，地平如镜，湿而不粘”</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ Tab 2 植保图谱 ============ -->
+    <section class="space-y-6 hidden" id="view-protection">
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 border-b pb-4 gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-green-800 flex items-center gap-2">
+                        <span class="material-symbols-outlined">menu_book</span> VE-R4 全周期精准植保图谱
+                    </h2>
+                    <p class="text-sm text-gray-500 mt-1 font-medium">玉米生长发育核心数据 · 逆境预警</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-bold text-gray-500">当前筛选:</span>
+                    <select class="border rounded p-1 text-xs" onchange="filterProtection(this.value)">
+                        <option value="all">显示全部阶段</option>
+                        <option value="seedling">苗期 (VE-V6)</option>
+                        <option value="ear">穗期 (V9-VT)</option>
+                        <option value="grain">花粒期 (R1-R4)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="space-y-6" id="protection-list"></div>
+        </div>
+    </section>
+
+    <!-- ============ Tab 3 施肥与药剂 ============ -->
+    <section class="hidden" id="view-fertilizer">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+            <!-- 左栏 -->
+            <div class="md:col-span-5 space-y-4">
+                <!-- 土壤评估 -->
+                <div class="bg-white rounded-xl shadow p-4 border border-yellow-500 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-yellow-500 text-white text-sm px-2 py-0.5 rounded-bl">斯坦福方程</div>
+                    <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 pb-2 border-b border-yellow-100">
+                        <span class="material-symbols-outlined text-yellow-600">terrain</span> 土壤肥力评估
+                    </h3>
+                    <div class="flex gap-2 mb-4 bg-gray-100 p-1 rounded-lg">
+                        <button class="flex-1 py-1 text-xs font-bold rounded-md transition soil-level-btn active" id="btn-soil-l1" onclick="switchSoilLevel(1)">经验</button>
+                        <button class="flex-1 py-1 text-xs font-bold rounded-md transition soil-level-btn" id="btn-soil-l3" onclick="switchSoilLevel(3)">测土</button>
+                    </div>
+                    <div class="space-y-3" id="soil-level-1">
+                        <div>
+                            <label class="text-sm font-bold text-gray-600 mb-1 block">土壤质地与颜色</label>
+                            <select class="w-full border border-gray-300 rounded p-2 text-sm bg-white" id="soilL1Type" onchange="calculateAll()">
+                                <option value="high">⚫️ 黑土/黑钙土 (肥沃)</option>
+                                <option selected="" value="mid">🟤 褐土/黄壤 (中等)</option>
+                                <option value="low">🟡 沙土/白浆土 (贫瘠)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-sm font-bold text-gray-600 mb-1 block">常年地力水平</label>
+                            <div class="flex gap-2">
+                                <label class="flex-1 text-center border p-1 rounded cursor-pointer hover:bg-green-50 has-[:checked]:bg-green-100 has-[:checked]:border-green-500">
+                                    <input class="hidden" name="soilL1Yield" onchange="calculateAll()" type="radio" value="high">
+                                    <span class="text-xs font-bold text-green-700">高产田</span>
+                                </label>
+                                <label class="flex-1 text-center border p-1 rounded cursor-pointer hover:bg-yellow-50 has-[:checked]:bg-yellow-100 has-[:checked]:border-yellow-500">
+                                    <input checked="" class="hidden" name="soilL1Yield" onchange="calculateAll()" type="radio" value="mid">
+                                    <span class="text-xs font-bold text-yellow-700">中产田</span>
+                                </label>
+                                <label class="flex-1 text-center border p-1 rounded cursor-pointer hover:bg-red-50 has-[:checked]:bg-red-100 has-[:checked]:border-red-500">
+                                    <input class="hidden" name="soilL1Yield" onchange="calculateAll()" type="radio" value="low">
+                                    <span class="text-xs font-bold text-red-700">低产田</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-2 hidden" id="soil-level-3">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div><label class="text-sm font-bold text-gray-600">土壤PH值</label><input class="w-full border rounded p-1 text-xs font-bold focus:border-green-500 outline-none" id="soilL3PH" oninput="calculateAll()" step="0.1" type="number" value="6.5"></div>
+                            <div><label class="text-sm font-bold text-gray-600">全氮含量 (g/kg)</label><input class="w-full border rounded p-1 text-xs font-bold focus:border-green-500 outline-none" id="soilL3TN" oninput="calculateAll()" step="0.1" type="number" value="1.2"></div>
+                            <div><label class="text-sm font-bold text-gray-600">有机质 (g/kg)</label><input class="w-full border rounded p-1 text-xs" id="soilL3OM" oninput="calculateAll()" type="number" value="25"></div>
+                            <div><label class="text-sm font-bold text-gray-600">水解氮 (mg/kg)</label><input class="w-full border rounded p-1 text-xs" id="soilL3N" oninput="calculateAll()" type="number" value="120"></div>
+                            <div><label class="text-sm font-bold text-gray-600">有效磷 (mg/kg)</label><input class="w-full border rounded p-1 text-xs" id="soilL3P" oninput="calculateAll()" type="number" value="30"></div>
+                            <div><label class="text-sm font-bold text-gray-600">速效钾 (mg/kg)</label><input class="w-full border rounded p-1 text-xs" id="soilL3K" oninput="calculateAll()" type="number" value="110"></div>
+                            <div><label class="text-sm font-bold text-gray-600">有效锌 (mg/kg)</label><input class="w-full border rounded p-1 text-xs" id="soilL3Zn" oninput="calculateAll()" type="number" value="0.8"></div>
+                        </div>
+                        <div class="text-sm text-blue-600 cursor-pointer underline text-right" onclick="fillDemoLabData()">填入示范数据</div>
+                    </div>
+                    <div class="mt-3 bg-gray-50 p-2 rounded border border-gray-200" id="soil-supply-box">
+                        <div class="text-sm font-bold text-gray-500 mb-1">土壤修正系数（需肥 × 系数 · 均值 <span id="soilCFMean">1.00</span>）</div>
+                        <div class="flex justify-between text-[13px] font-mono font-bold text-green-700">
+                            <span>N: <span id="soilSupplyN">1.00</span></span>
+                            <span>P₂O₅: <span id="soilSupplyP">1.00</span></span>
+                            <span>K₂O: <span id="soilSupplyK">1.00</span></span>
+                        </div>
+                        <div class="text-[11px] text-gray-400 mt-0.5">&lt;1 肥沃减量 · 1.0 标准 · &gt;1 贫瘠增量</div>
+                    </div>
+                </div>
+
+                <!-- 基础参数 -->
+                <div class="bg-white rounded-xl shadow p-4 border border-gray-200">
+                    <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 border-b pb-2">
+                        <span class="material-symbols-outlined text-blue-600">settings_input_component</span> 基础参数与秸秆
+                    </h3>
+                    <div class="mb-4">
+                        <label class="text-sm font-bold text-gray-700 block mb-1">秸秆处理 (影响N/K/微量)</label>
+                        <select class="w-full border-2 border-yellow-200 rounded-lg p-2 text-sm font-bold text-gray-800 bg-yellow-50 focus:border-yellow-500 outline-none transition" id="strawSelect" onchange="calculateAll()">
+                            <option value="return">🌱 秸秆还田 (需增氮 / 补钾微)</option>
+                            <option value="burn">🔥 秸秆焚烧 (氮损失 / 补钾磷)</option>
+                            <option value="remove">🚜 秸秆打包 (养分全失 / 贫瘠)</option>
+                        </select>
+                        <div class="mt-2 p-2 rounded text-xs border flex flex-col gap-1 bg-yellow-50 border-yellow-200 text-yellow-800" id="soilHealthFeedback"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-2">
+                        <div>
+                            <label class="text-sm font-bold text-gray-500 block mb-1">目标湿粮产量</label>
+                            <input class="w-full border rounded p-2 font-bold text-gray-700" id="inputYield" oninput="calculateAll()" type="number" value="1000">
+                        </div>
+                        <div>
+                            <label class="text-sm font-bold text-gray-500 block mb-1">单位</label>
+                            <select class="w-full border rounded p-2 text-sm bg-gray-50 font-bold text-blue-800" id="unitSelect" onchange="calculateAll()">
+                                <option value="mu">kg/亩</option>
+                                <option value="ha">kg/公顷</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex justify-between text-sm font-bold text-gray-500 mb-1">
+                        <span>收割含水率: <span class="text-blue-600" id="moistureDisplay">30%</span></span>
+                        <span class="text-[9px] text-gray-400">湿粮 × (1-含水率) ÷ 0.86 = 干粮(14%)</span>
+                    </div>
+                    <input class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mb-2" id="inputMoisture" max="40" min="14" oninput="calculateAll()" type="range" value="30">
+                    <div class="bg-blue-50 p-2 rounded border border-blue-100 flex justify-between items-center">
+                        <span class="text-xs text-blue-600 block">折合标准产量 (14%水): <span class="font-bold text-blue-800" id="stdYieldDisplay">814</span> <span class="unit-label text-xs text-blue-800">kg/亩</span></span>
+                        <span class="text-[9px] text-blue-400">需肥量按干粮计算</span>
+                    </div>
+                    <!-- 公告产量对比行 -->
+                    <div class="bg-gray-50 p-2 rounded border border-gray-200 text-sm space-y-0.5" id="yieldCompareRow">
+                        <div class="text-gray-500 font-bold mb-0.5">📊 公告产量对照（同含水率）</div>
+                        <div class="flex justify-between text-gray-600"><span>公告平均产量</span><span class="font-bold" id="announceAvgWet">—</span></div>
+                        <div class="flex justify-between text-gray-600"><span>公告最高产量</span><span class="font-bold" id="announceMaxWet">—</span></div>
+                        <div class="flex justify-between pt-0.5 border-t border-gray-200"><span class="text-gray-500">我的目标(干粮) vs 公告平均</span><span class="font-bold" id="yieldGapBadge">—</span></div>
+                    </div>
+                </div>
+
+                <!-- 有机肥 -->
+                <div class="bg-white rounded-xl shadow p-4 border border-emerald-300 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-emerald-500 text-white text-sm px-2 py-0.5 rounded-bl">新增</div>
+                    <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 pb-2 border-b border-emerald-100">
+                        <span class="material-symbols-outlined text-emerald-600">grass</span> 有机肥设置
+                    </h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-sm font-bold text-gray-600 mb-1 block">有机肥类型</label>
+                            <select class="w-full border border-gray-300 rounded p-2 text-sm bg-white" id="omType" onchange="calculateAll()">
+                                <option value="farm">🐄 腐熟农家肥（N0.45% P0.25% K0.6%）</option>
+                                <option value="commercial">📦 商品有机肥（N2% P1% K2%）</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-sm font-bold text-gray-600 mb-1 block">施用量 (kg/亩，0 表示不施)</label>
+                            <input class="w-full border border-gray-300 rounded p-2 text-sm" id="omAmount" oninput="calculateAll()" type="number" value="0">
+                        </div>
+                        <div class="bg-emerald-50 border border-emerald-100 rounded p-2 text-sm text-emerald-700 leading-relaxed">
+                            ℹ️ 有机肥按当季矿化利用率折算（N≈30% P≈35% K≈60%），其余部分计入土壤培肥。施用量超过 2000kg/亩时建议整地时全层施入。
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 根部肥料 -->
+                <div class="bg-white rounded-xl shadow p-4 border border-gray-200">
+                    <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 border-b pb-2">
+                        <span class="material-symbols-outlined text-green-600">compost</span> 根部肥料配方
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="relative">
+                            <label class="text-sm font-bold text-gray-500 block mb-1 flex justify-between">
+                                <span>① 种肥 (Seed Fert)</span>
+                                <span class="text-sm text-green-600 bg-green-50 px-1 rounded">5kg/亩 · 隔离8-10cm</span>
+                            </label>
+                            <div class="flex gap-2">
+                                <select class="flex-grow border border-gray-300 rounded p-2 text-xs bg-gray-50 truncate" id="seedFertSelect" onchange="handleFertTypeChange('seed')"></select>
+                                <div class="w-20 relative">
+                                    <span class="absolute left-1 top-2 text-gray-400 text-xs">¥</span>
+                                    <input class="w-full border border-gray-300 rounded p-2 pl-4 text-xs" id="priceSeed" oninput="calculateAll()" placeholder="单价" type="number" value="4.2">
+                                </div>
+                            </div>
+                            <div class="hidden mt-2 bg-yellow-50 p-2 rounded border border-yellow-200 grid grid-cols-4 gap-2 items-center" id="custom-seed-wrap">
+                                <span class="text-sm font-bold text-yellow-800">NPK:</span>
+                                <input class="w-full border rounded p-1 npk-input text-xs" id="customSeedN" oninput="calculateAll()" type="number" value="15">
+                                <input class="w-full border rounded p-1 npk-input text-xs" id="customSeedP" oninput="calculateAll()" type="number" value="15">
+                                <input class="w-full border rounded p-1 npk-input text-xs" id="customSeedK" oninput="calculateAll()" type="number" value="15">
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <label class="text-sm font-bold text-gray-500 block mb-1 flex justify-between">
+                                <span>② 基肥 (Base Fert)</span>
+                                <span class="text-sm text-blue-600 bg-blue-50 px-1 rounded">翻地深施</span>
+                            </label>
+                            <div class="flex gap-2">
+                                <select class="flex-grow border border-gray-300 rounded p-2 text-xs bg-gray-50 truncate" id="baseFertSelect" onchange="handleFertTypeChange('base')"></select>
+                                <div class="w-20 relative">
+                                    <span class="absolute left-1 top-2 text-gray-400 text-xs">¥</span>
+                                    <input class="w-full border border-gray-300 rounded p-2 pl-4 text-xs" id="priceBase" oninput="calculateAll()" placeholder="单价" type="number" value="3.8">
+                                </div>
+                            </div>
+                            <div class="hidden mt-2 bg-yellow-50 p-2 rounded border border-yellow-200 grid grid-cols-4 gap-2 items-center" id="custom-base-wrap">
+                                <span class="text-sm font-bold text-yellow-800">NPK:</span>
+                                <input class="w-full border rounded p-1 npk-input text-xs" id="customBaseN" oninput="calculateAll()" type="number" value="26">
+                                <input class="w-full border rounded p-1 npk-input text-xs" id="customBaseP" oninput="calculateAll()" type="number" value="12">
+                                <input class="w-full border rounded p-1 npk-input text-xs" id="customBaseK" oninput="calculateAll()" type="number" value="10">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右栏 -->
+            <div class="md:col-span-7 space-y-4">
+                <!-- 叶面套餐 -->
+                <div class="bg-white rounded-xl shadow p-4 border border-blue-200">
+                    <h3 class="font-bold text-blue-900 mb-3 flex items-center justify-between border-b border-blue-100 pb-2">
+                        <span class="flex items-center gap-2"><span class="material-symbols-outlined">vaccines</span> 叶面营养与统防统治</span>
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                            <div class="pt-1"><input class="w-4 h-4 text-blue-600 rounded" id="checkV6" onchange="calculateAll()" type="checkbox"></div>
+                            <div class="flex-grow">
+                                <div class="flex justify-between items-center">
+                                    <div class="font-bold text-sm text-blue-800">V6 苗期提苗套餐</div>
+                                    <div class="text-xs font-bold text-blue-600 flex items-center">
+                                        ¥<input class="w-12 border-b border-blue-300 text-center mx-1 bg-transparent focus:outline-none" id="inputPriceV6" oninput="calculateAll()" type="number" value="25">/<span class="unit-area-name">亩</span>
+                                    </div>
+                                </div>
+                                <div class="text-sm text-blue-600 mt-1">配方: 氨基酸水溶肥 + 流体锌 + 杀虫剂</div>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                            <div class="pt-1"><input class="w-4 h-4 text-blue-600 rounded" id="checkV12" onchange="calculateAll()" type="checkbox"></div>
+                            <div class="flex-grow">
+                                <div class="flex justify-between items-center">
+                                    <div class="font-bold text-sm text-blue-800">V12 攻穗防虫套餐</div>
+                                    <div class="text-xs font-bold text-blue-600 flex items-center">
+                                        ¥<input class="w-12 border-b border-blue-300 text-center mx-1 bg-transparent focus:outline-none" id="inputPriceV12" oninput="calculateAll()" type="number" value="30">/<span class="unit-area-name">亩</span>
+                                    </div>
+                                </div>
+                                <div class="text-sm text-blue-600 mt-1">配方: 尿素 + 磷酸二氢钾 + 氯虫苯甲酰胺</div>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                            <div class="pt-1"><input checked="" class="w-4 h-4 text-green-600 rounded" id="checkVT" onchange="calculateAll()" type="checkbox"></div>
+                            <div class="flex-grow">
+                                <div class="flex justify-between items-center">
+                                    <div class="font-bold text-sm text-green-800">VT 抽雄飞防套餐 (一喷多效)</div>
+                                    <div class="text-xs font-bold text-green-600 flex items-center">
+                                        ¥<input class="w-12 border-b border-green-300 text-center mx-1 bg-transparent focus:outline-none" id="inputPriceVT" oninput="calculateAll()" type="number" value="45">/<span class="unit-area-name">亩</span>
+                                    </div>
+                                </div>
+                                <div class="text-sm text-green-600 mt-1">配方: 吡唑 + 苯甲 + 噻虫嗪 + 磷二 + 硼</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 智能配方结果 -->
+                <div class="bg-white rounded-xl shadow p-5 border-t-4 border-yellow-500">
+                    <h3 class="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-yellow-600">assignment_turned_in</span> 智能配方结果
+                        <span class="text-sm font-normal text-gray-400 ml-auto">斯坦福方程：需肥 = 产量/100 × 2.3/0.9/2.3 × 土壤修正系数，扣有机肥/秸秆归还后定配方</span>
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="bg-gray-50 rounded p-2 border">
+                            <div class="text-xs text-gray-500">根部种肥</div>
+                            <div class="font-bold text-gray-800"><span class="text-xl" id="resSeedAmount">0.0</span> <span class="unit-label text-xs">kg/亩</span></div>
+                            <div class="text-sm truncate text-gray-400" id="resSeedName">推荐施肥量</div>
+                        </div>
+                        <div class="bg-gray-50 rounded p-2 border">
+                            <div class="text-xs text-gray-500">根部基肥</div>
+                            <div class="font-bold text-gray-800"><span class="text-xl" id="resBaseAmount">0.0</span> <span class="unit-label text-xs">kg/亩</span></div>
+                            <div class="text-sm truncate text-gray-400" id="resBaseName">推荐施肥量</div>
+                        </div>
+                    </div>
+
+                    <!-- 养分平衡明细 -->
+                    <div class="mb-4 overflow-x-auto">
+                        <table class="w-full min-w-[400px] text-sm border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-600">
+                                    <th class="p-2.5 border text-left">养分</th>
+                                    <th class="p-2.5 border text-right">总需求(×修正)</th>
+                                    <th class="p-2.5 border text-right">秸秆调节</th>
+                                    <th class="p-2.5 border text-right">有机肥当季</th>
+                                    <th class="p-2.5 border text-right">化肥补充(纯量)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td class="p-2.5 border font-bold">氮 N</td><td class="p-2.5 border text-right" id="balN1"></td><td class="p-2.5 border text-right" id="balN2"></td><td class="p-2.5 border text-right" id="balN3"></td><td class="p-2.5 border text-right font-bold text-green-700" id="balN4"></td></tr>
+                                <tr><td class="p-2.5 border font-bold">磷 P₂O₅</td><td class="p-2.5 border text-right" id="balP1"></td><td class="p-2.5 border text-right" id="balP2"></td><td class="p-2.5 border text-right" id="balP3"></td><td class="p-2.5 border text-right font-bold text-green-700" id="balP4"></td></tr>
+                                <tr><td class="p-2.5 border font-bold">钾 K₂O</td><td class="p-2.5 border text-right" id="balK1"></td><td class="p-2.5 border text-right" id="balK2"></td><td class="p-2.5 border text-right" id="balK3"></td><td class="p-2.5 border text-right font-bold text-green-700" id="balK4"></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="space-y-2 mb-4">
+                        <!-- 分次追肥 -->
+                        <div class="flex justify-between items-center p-2 bg-blue-50 rounded border border-blue-100">
+                            <div>
+                                <div class="font-bold text-sm text-blue-800">分次追肥 · 尿素 (46% N)</div>
+                                <div class="text-sm text-blue-600 mt-1">
+                                    <span>单价 ¥</span>
+                                    <input class="w-16 mx-1 border border-blue-200 rounded px-1 text-center bg-white text-blue-800 font-black focus:outline-none focus:border-blue-500 text-sm" id="priceUrea" oninput="calculateAll()" step="0.1" type="number" value="2.6">
+                                    <span>/kg</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold text-blue-900"><span class="text-xl text-yellow-600" id="resUreaAmount">0.0</span> <span class="unit-label text-xs">kg/亩</span></div>
+                                <div class="text-sm text-blue-400 font-bold" id="ureaReason">拔节期 / 大喇叭口期分次追施</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="flex justify-between items-center p-2 bg-indigo-50 rounded border border-indigo-100">
+                                <div class="text-xs font-bold text-indigo-800">拔节期追施</div>
+                                <div class="font-bold text-indigo-900 text-lg"><span id="ureaJoint">0.0</span><span class="text-sm">kg</span></div>
+                            </div>
+                            <div class="flex justify-between items-center p-2 bg-purple-50 rounded border border-purple-100">
+                                <div class="text-xs font-bold text-purple-800">大喇叭口期追施</div>
+                                <div class="font-bold text-purple-900 text-lg"><span id="ureaBell">0.0</span><span class="text-sm">kg</span></div>
+                            </div>
+                        </div>
+                        <!-- 补钾 -->
+                        <div class="flex justify-between items-center p-2 bg-orange-50 rounded border border-orange-100">
+                            <div>
+                                <div class="font-bold text-sm text-orange-800">补钾 (氯化钾 60% K₂O)</div>
+                                <div class="text-sm text-orange-600 flex items-center mt-1">
+                                    <span>单价 ¥</span>
+                                    <input class="w-16 mx-1 border border-orange-200 rounded px-1 text-center bg-white text-orange-800 font-black focus:outline-none focus:border-orange-500 text-sm" id="priceK" oninput="calculateAll()" step="0.1" type="number" value="3.8">
+                                    <span>/kg</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold text-orange-900"><span class="text-xl" id="resKAmount">0.0</span> <span class="unit-label text-xs">kg/亩</span></div>
+                                <div class="text-sm text-orange-400" id="kReason">基施60% · 追施40%</div>
+                            </div>
+                        </div>
+                        <!-- 有机肥 -->
+                        <div class="flex justify-between items-center p-2 bg-emerald-50 rounded border border-emerald-100">
+                            <div>
+                                <div class="font-bold text-sm text-emerald-800">有机肥</div>
+                                <div class="text-sm text-emerald-600 mt-1">
+                                    <span>单价 ¥</span>
+                                    <input class="w-16 mx-1 border border-emerald-200 rounded px-1 text-center bg-white text-emerald-800 font-black focus:outline-none focus:border-emerald-500 text-sm" id="priceOM" oninput="calculateAll()" step="1" type="number" value="0.25">
+                                    <span>/kg</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold text-emerald-900"><span class="text-xl" id="resOMAmount">1000</span> <span class="unit-label text-xs">kg/亩</span></div>
+                                <div class="text-sm text-emerald-500" id="omReason">整地时全层施入</div>
+                            </div>
+                        </div>
+                        <!-- 锌肥提示 -->
+                        <div class="p-2 rounded border border-zinc-200 bg-zinc-50 text-[13px] text-zinc-700" id="znAdvice"></div>
+                    </div>
+
+                    <div class="h-44 w-full relative">
+                        <canvas id="fertChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 成本精算 -->
+                <div class="bg-white rounded-xl shadow p-5 border-t-4 border-red-500">
+                    <h3 class="font-bold text-lg text-gray-800 mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-red-600">payments</span> 成本精算表 (Costing)
+                    </h3>
+                    <div class="grid grid-cols-3 sm:grid-cols-6 gap-1 mb-3 text-center text-sm md:text-xs">
+                        <div class="bg-gray-50 p-1 rounded"><div class="text-gray-500">种肥</div><div class="font-bold">¥<span id="costSeed">0</span></div></div>
+                        <div class="bg-gray-50 p-1 rounded"><div class="text-gray-500">基肥</div><div class="font-bold">¥<span id="costBase">0</span></div></div>
+                        <div class="bg-gray-50 p-1 rounded"><div class="text-gray-500">追尿素</div><div class="font-bold">¥<span id="costUrea">0</span></div></div>
+                        <div class="bg-gray-50 p-1 rounded"><div class="text-gray-500">补钾</div><div class="font-bold">¥<span id="costK">0</span></div></div>
+                        <div class="bg-gray-50 p-1 rounded"><div class="text-gray-500">有机肥</div><div class="font-bold">¥<span id="costOM">0</span></div></div>
+                        <div class="bg-blue-50 p-1 rounded border border-blue-200"><div class="text-blue-600">叶/药</div><div class="font-bold text-blue-800">¥<span id="costFoliar">45</span></div></div>
+                    </div>
+                    <div class="flex items-center justify-between bg-red-50 p-4 rounded-lg border border-red-100">
+                        <div>
+                            <span class="block text-xs text-red-600 font-bold uppercase tracking-wider">每<span class="unit-area-name">亩</span>总成本</span>
+                            <span class="text-sm text-red-400">含化肥、有机肥、叶面肥、农药</span>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-3xl font-black text-red-700">¥<span id="totalCost">0</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- ============ Tab 4 气象逆境 ============ -->
+    <section class="space-y-6 hidden" id="view-weather">
+        <!-- 县域选择 + 状态 -->
+        <div class="bg-white rounded-xl shadow p-5 border-t-4 border-sky-500">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
+                <div>
+                    <h2 class="text-lg font-bold text-sky-800 flex items-center gap-2">
+                        <span class="material-symbols-outlined">cloudy_snowing</span> 气象逆境评估
+                    </h2>
+                    <p class="text-[13px] text-gray-500 mt-1">实况（4月起）· 8天预报 · 东北三省+蒙东219县市 · 数据每日自动更新</p>
+                </div>
+                <div class="flex items-center gap-2 w-full md:w-auto">
+                    <span class="text-sm font-bold text-gray-500 whitespace-nowrap">评估区域:</span>
+                    <select class="border rounded p-2 text-sm bg-white md:w-32" id="weatherProvinceSelect" onchange="onWeatherProvinceChange(this.value)">
+                        <option value="">省份</option>
+                    </select>
+                    <select class="border rounded p-2 text-sm flex-grow md:w-44 bg-white" id="weatherTownSelect" onchange="weatherSelectTown(this.value)">
+                        <option value="">县市</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 text-xs text-gray-500" id="weatherStatusLine">
+                <span class="status-dot"></span> 等待选择县市...
+            </div>
+        </div>
+
+        <!-- 预警卡片区 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="weatherAlertGrid"></div>
+
+        <!-- 曲线图 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white rounded-xl shadow p-5">
+                <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-amber-600">temp_preferences_custom</span> ≥10℃ 活动积温曲线
+                </h3>
+                <div class="h-56 relative"><canvas id="gddChart"></canvas></div>
+                <p class="text-sm text-gray-400 mt-2" id="gddChartNote">实线=实况 · 虚线=预报（8天截止）</p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-5">
+                <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-cyan-600">water_drop</span> 水分收支（降水 vs Kc×ET₀）
+                </h3>
+                <div class="h-56 relative"><canvas id="waterChart"></canvas></div>
+                <p class="text-sm text-gray-400 mt-2" id="waterChartNote">柱=降水 · 线=作物需水(Kc×ET₀) · ET₀为Hargreaves估算</p>
+            </div>
+        </div>
+
+        <!-- 逐日明细 -->
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            <div class="p-4 bg-sky-50 border-b border-sky-100 flex items-center gap-2">
+                <span class="material-symbols-outlined text-sky-700">calendar_view_day</span>
+                <h3 class="font-bold text-sky-800">逐日气象明细（近14天实况 + 8天预报）</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-[13px]">
+                    <thead><tr class="bg-gray-100 text-gray-600">
+                        <th class="p-2 border text-left">日期</th>
+                        <th class="p-2 border text-right">Tmin</th>
+                        <th class="p-2 border text-right">Tmax</th>
+                        <th class="p-2 border text-right">Tavg</th>
+                        <th class="p-2 border text-right">降水mm</th>
+                        <th class="p-2 border text-right">ET₀mm</th>
+                        <th class="p-2 border text-right">Kc</th>
+                        <th class="p-2 border text-right">水分差mm</th>
+                        <th class="p-2 border text-left">阶段</th>
+                        <th class="p-2 border text-left">数据源</th>
+                    </tr></thead>
+                    <tbody id="weatherDailyBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ Tab 5 审定信息 ============ -->
+    <section class="space-y-6 hidden" id="view-certification">
+        <div class="bg-white rounded-xl shadow p-5 border-t-4 border-indigo-500">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
+                <div>
+                    <h2 class="text-lg font-bold text-indigo-800 flex items-center gap-2">
+                        <span class="material-symbols-outlined">fact_check</span> 品种审定信息
+                    </h2>
+                    <p class="text-[13px] text-gray-500 mt-1">春玉米审定品种库（2016 起，共 <span id="certTotalCount">—</span> 条）· 与「种植技术」页品种框双向联动</p>
+                </div>
+            </div>
+            <div class="relative">
+                <label class="text-sm font-bold text-indigo-700 block mb-1">🔍 品种名称 / 审定编号（模糊检索，输入至少 2 个字）</label>
+                <div class="flex gap-1.5">
+                    <input class="flex-grow border border-indigo-300 rounded p-2 text-sm bg-white" id="certVarietyInput"
+                        placeholder="如：先玉335 / 国审玉20176020（输入部分即可，与种植技术页互通）" list="certVarietyList" oninput="onCertVarietyInput(this.value)">
+                    <datalist id="certVarietyList"></datalist>
+                    <button class="bg-indigo-500 text-white px-3 rounded text-xs font-bold" onclick="matchCertVariety()">匹配</button>
+                </div>
+                <!-- 辅助级联检索：选项值从当前候选结果提取，先选哪个哪个就是下一级 -->
+                <div class="flex flex-wrap items-center gap-1.5 mt-2" id="certFilterRow">
+                    <select class="border border-indigo-300 rounded p-1.5 text-xs bg-white text-gray-700" id="certFilterYear" onchange="onCertFilterChange()">
+                        <option value="">审定年份·全部</option>
+                    </select>
+                    <select class="border border-indigo-300 rounded p-1.5 text-xs bg-white text-gray-700" id="certFilterType" onchange="onCertFilterChange()">
+                        <option value="">类型·全部</option>
+                        <option value="普通">普通</option>
+                        <option value="鲜食">鲜食</option>
+                        <option value="青贮">青贮</option>
+                        <option value="爆裂">爆裂</option>
+                    </select>
+                    <select class="border border-indigo-300 rounded p-1.5 text-xs bg-white text-gray-700" id="certFilterTrans" onchange="onCertFilterChange()">
+                        <option value="">转基因·全部</option>
+                        <option value="是">转基因</option>
+                        <option value="否">非转基因</option>
+                    </select>
+                    <select class="border border-indigo-300 rounded p-1.5 text-xs bg-white text-gray-700 max-w-[220px]" id="certFilterCompany" onchange="onCertFilterChange()">
+                        <option value="">申报单位·全部</option>
+                    </select>
+                    <button class="bg-gray-100 text-gray-600 border border-gray-300 px-2.5 py-1.5 rounded text-xs font-bold hover:bg-gray-200" onclick="resetCertFilters()">清空筛选</button>
+                </div>
+                <div class="hidden mt-1 bg-white border border-indigo-300 rounded shadow max-h-44 overflow-y-auto" id="certVarietyCandidates"></div>
+                <p class="text-sm text-indigo-600 mt-1" id="certMatchResult"></p>
+            </div>
+        </div>
+
+        <!-- 审定信息详情展示 -->
+        <div class="hidden bg-white rounded-xl shadow overflow-hidden border-t-4 border-indigo-500" id="certDetailBox">
+            <div class="p-5 bg-indigo-50 border-b border-indigo-100">
+                <!-- 顶部：品种名 + 编号 + 类型徽标 + 基本信息并排 -->
+                <div class="flex flex-wrap items-center gap-2 mb-2">
+                    <h3 class="text-lg font-bold text-indigo-900" id="certName">—</h3>
+                    <span class="text-sm font-bold px-2 py-0.5 rounded-full bg-indigo-600 text-white" id="certTypeBadge">普通</span>
+                    <span class="text-sm font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700" id="certTransBadge">非转基因</span>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 text-[13px]">
+                    <div class="bg-white rounded p-1.5 border border-indigo-100"><div class="text-gray-400">审定编号</div><div class="font-bold text-gray-700" id="certJudgementNo">—</div></div>
+                    <div class="bg-white rounded p-1.5 border border-indigo-100"><div class="text-gray-400">审定年份</div><div class="font-bold text-gray-700" id="certYear">—</div></div>
+                    <div class="bg-white rounded p-1.5 border border-indigo-100"><div class="text-gray-400">审定地区</div><div class="font-bold text-gray-700" id="certRegion">—</div></div>
+                    <div class="bg-white rounded p-1.5 border border-indigo-100"><div class="text-gray-400">公告号</div><div class="font-bold text-gray-700" id="certAnnounceNo">—</div></div>
+                    <div class="bg-white rounded p-1.5 border border-indigo-100"><div class="text-gray-400">品种来源</div><div class="font-bold text-gray-700" id="certSource">—</div></div>
+                    <div class="bg-white rounded p-1.5 border border-indigo-100 md:col-span-2"><div class="text-gray-400">申请单位</div><div class="font-bold text-gray-700" id="certApplyCompany">—</div></div>
+                    <div class="bg-white rounded p-1.5 border border-indigo-100 md:col-span-2"><div class="text-gray-400">选育单位</div><div class="font-bold text-gray-700" id="certBreedingCompany">—</div></div>
+                </div>
+            </div>
+            <div class="p-5 space-y-4">
+                <!-- 核心指标卡（9字段） -->
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    <div class="bg-green-50 rounded-xl p-3 border border-green-200 text-center">
+                        <div class="text-sm text-green-600 font-bold">成熟期</div>
+                        <div class="text-xl font-black text-green-700" id="certGrowthDays">—</div>
+                        <div class="text-sm text-green-500">天</div>
+                    </div>
+                    <div class="bg-amber-50 rounded-xl p-3 border border-amber-200 text-center">
+                        <div class="text-sm text-amber-600 font-bold">活动积温</div>
+                        <div class="text-xl font-black text-amber-700" id="certGdd">—</div>
+                        <div class="text-sm text-amber-500">℃·d</div>
+                    </div>
+                    <div class="bg-cyan-50 rounded-xl p-3 border border-cyan-200 text-center">
+                        <div class="text-sm text-cyan-600 font-bold">平均产量</div>
+                        <div class="text-xl font-black text-cyan-700" id="certAvgYield">—</div>
+                        <div class="text-sm text-cyan-500">kg/亩</div>
+                    </div>
+                    <div class="bg-blue-50 rounded-xl p-3 border border-blue-200 text-center">
+                        <div class="text-sm text-blue-600 font-bold">种植密度</div>
+                        <div class="text-xl font-black text-blue-700" id="certDensity">—</div>
+                        <div class="text-sm text-blue-500">株/亩</div>
+                    </div>
+                    <div class="bg-purple-50 rounded-xl p-3 border border-purple-200 text-center">
+                        <div class="text-sm text-purple-600 font-bold">适宜肥力</div>
+                        <div class="text-xl font-black text-purple-700" id="certFertility">—</div>
+                        <div class="text-sm text-purple-500">等级</div>
+                    </div>
+                </div>
+                <!-- 四大文本：由上至下，宽度随字数舒展 -->
+                <div class="space-y-4">
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <div class="text-sm font-bold text-gray-600 mb-2">📋 特征特性</div>
+                        <div class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap" id="certCharacter"></div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <div class="text-sm font-bold text-gray-600 mb-2">📊 产量表现</div>
+                        <div class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap" id="certOutput"></div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <div class="text-sm font-bold text-gray-600 mb-2">🌱 栽培技术要点</div>
+                        <div class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap" id="certPlantReq"></div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <div class="text-sm font-bold text-gray-600 mb-2">✅ 审定意见</div>
+                        <div class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap" id="certSuggestion"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="relative overflow-hidden mt-auto text-gray-200 hero-overlay grain-noise">
+    <div class="max-w-7xl mx-auto px-4 md:px-6 py-10 space-y-4">
+        <div>
+            <div class="flex items-center gap-2 mb-3">
+                <span class="material-symbols-outlined text-yellow-400 text-3xl">agriculture</span>
+                <div>
+                    <div class="text-lg font-bold tracking-wide">农业·玉米种植智能辅助</div>
+                    <div class="text-[13px] text-green-200">Pro v5.0 · 养分平衡施肥与风险评估工具</div>
+                </div>
+            </div>
+            <p class="text-sm leading-relaxed text-green-200/90">
+                围绕玉米种植全周期，提供技术科普、品种参考、肥药估算、气象风险提示等信息，帮助农户与农业服务团队更直观地整理决策依据。
+            </p>
+        </div>
+    </div>
+    <div class="border-t border-white/10">
+        <div class="max-w-7xl mx-auto px-4 md:px-6 py-4 text-[13px] text-green-200/80 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+            <div>© 2025 示例农业服务品牌。页面内容仅供学习与参考，不构成任何农业建议。</div>
+            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-yellow-400">verified</span> 数据与模型仍在持续优化中</div>
+        </div>
+    </div>
+</footer>
+
+<script>
+'use strict';
+let chart = null;
+let currentSoilLevel = 1;
+let currentStageIdx = -1;
+let protectionFilter = 'all';
+
+/* ================= 工具函数 ================= */
+function safeNum(v, def) {
+    const n = parseFloat(v);
+    return isFinite(n) ? n : (def || 0);
+}
+function clamp(v, min, max) {
+    return Math.min(max, Math.max(min, v));
+}
+function fmtDate(d) {
+    return (d.getMonth() + 1) + '月' + d.getDate() + '日';
+}
+function addDays(d, n) {
+    const x = new Date(d.getTime());
+    x.setDate(x.getDate() + n);
+    return x;
+}
+function fmt1(v) { return (Math.round(v * 10) / 10).toFixed(1); }
+
+/* ================= 肥料库 ================= */
+const fertilizers = [
+    { name: "26-12-10 控失保持型", n:26, p:12, k:10 },
+    { name: "26-11-12 双控复合肥", n:26, p:11, k:12 },
+    { name: "25-10-16 低氯复合肥", n:25, p:10, k:16 },
+    { name: "25-10-13 中氯复合肥", n:25, p:10, k:13 },
+    { name: "18-18-18 黄腐酸型", n:18, p:18, k:18 },
+    { name: "18-18-18 双控复合肥", n:18, p:18, k:18 },
+    { name: "14-16-15 硫酸钾型", n:14, p:16, k:15 },
+    { name: "12-19-14 硫酸钾控失", n:12, p:19, k:14 },
+    { name: "12-18-15 硫酸钾复合", n:12, p:18, k:15 }
+];
+
+/* ================= 品种与生育期档案 ================= */
+const CROP_CFG = {
+    grain:  { name: '籽粒玉米', densSpring: [4000, 4500], densSummer: [4500, 5500], need: {n:2.6, p:1.0, k:2.4}, note: '籽粒产量型，注意穗位整齐度与抗倒性' },
+    silage: { name: '青贮玉米', densSpring: [5500, 6500], densSummer: [6000, 7000], need: {n:2.4, p:0.9, k:2.2}, note: '全株生物产量型，密度高、群体产量优先' },
+    fresh:  { name: '鲜食玉米', densSpring: [3500, 4000], densSummer: [3800, 4300], need: {n:2.2, p:0.8, k:2.0}, note: '鲜穗型，需与普通玉米隔离种植防串粉' }
+};
+// 品种活动积温需求（≥10℃活动积温, ℃·d，区划口径）；理论轨预算经 getTotalGDD 换算为有效积温（生长口径）
+const STAGES = [
+    { key: 'sowing',   name: '播种-出苗',    start: 0.00, end: 0.08, kc: 0.45,
+      tip: '查苗补种：缺苗>10%及时补种或移栽；板结土壤需破除；地下害虫（蛴螬/金针虫）防治' },
+    { key: 'seedling', name: '苗期',         start: 0.08, end: 0.28, kc: 0.65,
+      tip: '3叶间苗、5叶定苗；蹲苗促根；中耕除草（3叶后5叶前是除草窗口）；缺磷/低温易紫苗' },
+    { key: 'jointing', name: '拔节期',       start: 0.28, end: 0.50, kc: 0.85,
+      tip: '追施攻秆肥（总追氮量约40%）；浇水促长；防玉米螟二代；密度过大可化学控旺' },
+    { key: 'bellmouth',name: '大喇叭口期',   start: 0.50, end: 0.65, kc: 1.00,
+      tip: '追施攻穗肥（总追氮量约30%）；此期是需肥临界期；浇足水防旱；防螟（丢心/飞防）' },
+    { key: 'tassel',   name: '抽雄吐丝期',   start: 0.65, end: 0.78, kc: 1.15,
+      tip: '水分临界期！干旱减产3-8%/天，必须保证水分；高温>30℃辅助人工授粉；一喷多效防病防虫' },
+    { key: 'filling',  name: '灌浆乳熟期',   start: 0.78, end: 0.95, kc: 0.95,
+      tip: '保叶防早衰：叶喷磷酸二氢钾；防南方锈病；保持湿润防秃尖；杜绝缺氮（后期脱肥）' },
+    { key: 'mature',   name: '成熟收获期',   start: 0.95, end: 1.00, kc: 0.60,
+      tip: '适时晚收：苞叶变黄后7-10天收获增产5-10%；青贮玉米于1/2乳线期收割；籽粒含水量降至25%左右' }
+];
+
+/* ================= 技术流程 ================= */
+const PROCESS_STEPS = [
+    { icon: '1', title: '选种购种', color: 'bg-blue-600',
+      goal: '选用审定品种，抗逆性与熟期匹配当地无霜期',
+      points: ['种子标准：纯度≥96%、净度≥98%、发芽率≥93%、含水率≤13%',
+               '熟期匹配：无霜期短选早熟，光热充足选晚熟高产品种',
+               '按种植用途选专用种：籽粒/青贮（生物产量高）/鲜食（隔离种植）'],
+      warn: '勿用陈种、霉变种；包衣种不再浸种' },
+    { icon: '2', title: '种子处理', color: 'bg-green-600',
+      goal: '防病防虫、促苗齐苗壮',
+      points: ['未包衣种子：用含杀菌剂+杀虫剂种衣剂包衣，兼治丝黑穗病与地下害虫',
+               '播前晒种2-3天，提高发芽势',
+               '缺锌土壤可种子拌锌或基施硫酸锌'],
+      warn: '包衣种严禁食用/饲用；操作戴手套' },
+    { icon: '3', title: '整地', color: 'bg-yellow-600',
+      goal: '创造深厚疏松、墒足土碎的苗床',
+      points: ['秋翻25-30cm打破犁底层，旋耕两年至少深耕一次',
+               '秸秆还田需粉碎+深翻掩埋，并增施氮肥调节碳氮比',
+               '播种前耙耱镇压，做到地平、土碎、墒足、无根茬'],
+      warn: '湿黏地勿强行整地，避免板结' },
+    { icon: '4', title: '播种', color: 'bg-purple-600',
+      goal: '一播全苗，苗齐苗匀苗壮',
+      points: ['播期：5-10cm地温稳定通过10-12℃（春播）',
+               '播深3-5cm：黏土宜浅、沙土宜深、墒差宜深',
+               '种肥同播时种肥隔离8-10cm，防止烧种'],
+      warn: '抢墒播种；干旱造墒后播种，杜绝干播等雨' },
+    { icon: '5', title: '苗期管理', color: 'bg-cyan-600',
+      goal: '促根蹲苗，培育壮苗',
+      points: ['查苗补苗：出苗后及时查漏补缺，缺苗>10%补种或移栽',
+               '3叶间苗、5叶定苗，去弱留强',
+               '中耕除草2-3次，苗期可适度蹲苗（控水促根）'],
+      warn: '除草剂避开3叶前、5叶后；药害及时喷芸苔素缓解' },
+    { icon: '6', title: '拔节-大喇叭口', color: 'bg-indigo-600',
+      goal: '攻秆攻穗，壮秆大穗',
+      points: ['拔节期追攻秆肥（约占追氮40%），结合培土',
+               '大喇叭口期追攻穗肥（约占追氮30%），结合浇水',
+               '此期是需肥临界期，肥水协同；防玉米螟（颗粒剂丢心或飞防）'],
+      warn: '控旺剂严格按浓度使用，干旱禁用' },
+    { icon: '7', title: '抽雄授粉', color: 'bg-rose-600',
+      goal: '保障授粉结实，减少秃尖',
+      points: ['水分临界期：抽雄吐丝期干旱每天减产3-8%，务必浇好孕穗水、开花水',
+               '高温>30℃或大风天，上午9-10点人工辅助授粉',
+               '一喷多效：吡唑+噻虫嗪+苯甲+磷酸二氢钾+硼，防病防虫促授粉'],
+      warn: '授粉期慎用强触杀型农药，避免杀伤传粉昆虫' },
+    { icon: '8', title: '灌浆-收获', color: 'bg-teal-600',
+      goal: '保叶防早衰，颗粒归仓',
+      points: ['灌浆期叶喷磷酸二氢钾，防早衰、增粒重',
+               '防南方锈病：苯醚甲环唑+戊唑醇，注意安全间隔期',
+               '籽粒玉米苞叶变黄后7-10天晚收，增产5-10%；青贮1/2乳线期收割'],
+      warn: '收获前20天停用农药；病株带出田间' }
+];
+
+/* ================= Tab 切换 ================= */
+function switchTab(id) {
+    ['planting', 'protection', 'fertilizer', 'weather', 'certification'].forEach(t => {
+        document.getElementById('view-' + t).classList.toggle('hidden', t !== id);
+        const btn = document.getElementById('tab-' + t);
+        btn.classList.toggle('tab-active', t === id);
+        btn.classList.toggle('tab-inactive', t !== id);
+    });
+    if (id === 'planting') { renderDualTrack(); }
+    if (id === 'fertilizer') { setTimeout(updateChartRender, 60); }
+    if (id === 'weather') { weatherRefresh(); }
+}
+
+/* ================= 种植技术逻辑 ================= */
+function getCropType() { return document.getElementById('cropType').value; }
+function getMaturity() { return document.getElementById('maturity').value; }
+function getSowingMode() { return document.getElementById('sowingMode').value; }
+
+function getTotalDays() {
+    const mode = getSowingMode();
+    const m = getMaturity();
+    // 品种查找 / 自行输入：生育期天数都取自 customDays（品种查找模式下由品种库自动填入）
+    let days = safeNum(document.getElementById('customDays').value, 115);
+    if (m === 'variety' && varietyMatched && varietyMatched.growthDays > 0) {
+        days = varietyMatched.growthDays;   // 品种带入优先
+    }
+    return days + (mode === 'summer' ? -12 : 0);
+}
+
+/* 理论轨有效积温预算（生长预测用）
+   活动积温(公告/预设) → 有效积温 = 活动积温 - 10 × 生育期天数
+   两种来源：品种查找 → 品种库带入的积温；自行输入 → 手工天数（积温留空则按 天数×20 估算） */
+function getTotalGDD() {
+    const m = getMaturity();
+    const days = getTotalDays();
+    const v = safeNum(document.getElementById('customGdd').value, 0);
+    // 用户填的是活动积温（公告口径）→ 换算有效积温；为空则按 天数×20 估算（活动积温日均约20）
+    const active = v > 0 ? v : days * 20;
+    const eff = active - 10 * days;
+    if (v <= 0 && m === 'custom') {
+        const tag = document.getElementById('gddSourceTag');
+        if (tag && !varietyMatched) {
+            tag.textContent = '（估算）';
+            tag.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap bg-amber-100 text-amber-700';
+        }
+    }
+    return Math.max(0, eff);
+}
+
+function updateCropProfile() {
+    const cfg = CROP_CFG[getCropType()];
+    const mode = getSowingMode();
+    const m = getMaturity();
+    const total = getTotalDays();
+    const dens = mode === 'summer' ? cfg.densSummer : cfg.densSpring;
+    const mid = Math.round((dens[0] + dens[1]) / 2);
+
+    // 品种查找 / 自行输入 两档：显示输入区并切换内部模式
+    document.getElementById('customMaturityBox').classList.toggle('hidden', m !== 'custom' && m !== 'variety');
+    document.getElementById('varietySearchMode').classList.toggle('hidden', m !== 'variety');
+    document.getElementById('manualInputMode').classList.toggle('hidden', m !== 'custom');
+    document.getElementById('densityHint').textContent = '推荐 ' + dens[0] + '-' + dens[1];
+    document.getElementById('targetDensity').value = mid;
+
+    const sd = document.getElementById('sowDate').value;
+    let summary = cfg.name + '（' + (mode === 'spring' ? '春播' : '夏播') + '·' + total + '天），推荐密度 ' + dens[0] + '-' + dens[1] + ' 株/亩。' + cfg.note + '。';
+    if (sd) {
+        const s = new Date(sd);
+        summary = '播种 ' + fmtDate(s) + '，预计 ' + fmtDate(addDays(s, total)) + ' 前后成熟。' + summary;
+    }
+    document.getElementById('cropProfileSummary').textContent = summary;
+
+    updatePlantingCalc();
+    renderDualTrack();
+}
+
+function renderProcess() {
+    const wrap = document.getElementById('processSteps');
+    const detail = document.getElementById('processDetail');
+    wrap.innerHTML = '';
+    PROCESS_STEPS.forEach((st, i) => {
+        const b = document.createElement('button');
+        b.className = 'flex items-center gap-2 px-3 py-2 rounded-full border-2 border-green-200 bg-white hover:border-green-500 transition text-sm font-bold text-gray-700';
+        b.innerHTML = '<span class="step-dot ' + st.color + '">' + st.icon + '</span>' + st.title;
+        b.onclick = function () { renderProcessDetail(i); };
+        wrap.appendChild(b);
+    });
+    renderProcessDetail(0);
+}
+
+function renderProcessDetail(i) {
+    const st = PROCESS_STEPS[i];
+    const el = document.getElementById('processDetail');
+    let html = '<div class="flex items-center gap-3 mb-3"><span class="step-dot ' + st.color + '">' + st.icon + '</span>' +
+               '<div><div class="font-bold text-gray-800 text-lg">' + st.title + '</div>' +
+               '<div class="text-xs text-green-700 font-bold">目标：' + st.goal + '</div></div></div>' +
+               '<div class="grid md:grid-cols-2 gap-4">' +
+               '<div><div class="text-sm font-bold text-gray-500 mb-1">✔ 操作要点</div><ul class="space-y-1">';
+    st.points.forEach(p => { html += '<li class="text-xs text-gray-600 flex gap-1.5"><span class="text-green-600">•</span>' + p + '</li>'; });
+    html += '</ul></div>' +
+            '<div class="bg-red-50 border border-red-100 rounded p-2"><div class="text-xs font-bold text-red-600 mb-1">⚠ 注意事项</div><div class="text-xs text-red-700">' + st.warn + '</div></div>' +
+            '</div>';
+    el.innerHTML = html;
+    // 高亮当前点击的步骤按钮
+    document.querySelectorAll('#processSteps button').forEach((b, bi) => {
+        b.classList.toggle('border-green-600', bi === i);
+        b.classList.toggle('bg-green-50', bi === i);
+    });
+}
+
+function updatePlantingCalc() {
+    const space = safeNum(document.getElementById('ridgeSpace').value, 60);
+    const dens = safeNum(document.getElementById('targetDensity').value, 4500);
+    if (space > 0 && dens > 0) {
+        document.getElementById('plantSpaceResult').innerText = (6666667 / (space * dens)).toFixed(1);
+    } else {
+        document.getElementById('plantSpaceResult').innerText = '--';
+    }
+    const ridgeType = document.querySelector('input[name="ridgeType"]:checked').value;
+    document.getElementById('ridgeHint').innerText = ridgeType === 'normal' ? '输入垄距' : '输入平均垄距';
+
+    // 播深与用种量
+    const cfg = CROP_CFG[getCropType()];
+    const densArr = getSowingMode() === 'summer' ? cfg.densSummer : cfg.densSpring;
+    const densMin = densArr[0], densMax = densArr[1];
+    const depth = getSowingMode() === 'spring' ? '4-5' : '3-4';
+    document.getElementById('sowDepthResult').innerText = depth;
+    const seedKg = dens * 400 / 1000 / 1000 / 0.92 / 0.85 * 1000; // 千粒重400g，发芽率92%，成苗率85%
+    document.getElementById('seedAmountResult').innerText = seedKg.toFixed(1);
+    document.getElementById('sowAdvice').innerHTML =
+        '<b>密度校验：</b>' + (dens < densMin ? '⚠ 低于 ' + cfg.name + ' 推荐下限 ' + densMin + ' 株/亩，建议加密' :
+        dens > densMax ? '⚠ 超过 ' + cfg.name + ' 推荐上限 ' + densMax + ' 株/亩，易倒伏秃尖，建议减密' :
+        '✓ 处于 ' + cfg.name + ' 推荐区间 ' + densMin + '-' + densMax + ' 株/亩');
+}
+
+/* ================= 植保图谱 ================= */
+const fullProtectionDB = [
+    {
+        id: "VE", group: "seedling", stage: "VE 出苗期 (Emergence)", icon: "spa",
+        temp: "地温稳定 >10℃", water: "持水量 60-70%",
+        desc: "根系建立与全苗关键期。重点防地下害虫、根腐病及杂草。低温(<10℃)或除草剂残留可致'螺旋状中胚轴'，造成出苗失败。",
+        alert: "查苗补种：缺苗>10%应及时补种或移栽。板结土壤需破除。",
+        recipes: [
+            { name: "方案A: 常规种衣剂 (基础版)", mix: "苯醚甲环唑 + 噻虫嗪", pros: "成本低，对常见蚜虫、丝黑穗病有效。", cons: "对根腐病及顽固地下害虫持效期较短。" },
+            { name: "方案B: 双效加强版 (推荐)", mix: "精甲霜灵·咯菌腈 + 高含量吡虫啉 + 锌肥", pros: "强化防根腐，促进根系发育，苗齐苗壮。", cons: "种子处理成本稍高。" },
+            { name: "方案C: 封闭除草套餐 (播后苗前)", mix: "精甲(精异丙甲草胺) + 莠去津 + 乙草胺", pros: "封地效果好，早期无草害竞争。", cons: "需土壤湿度配合，干旱效果差。", phi: "见具体药剂", mrl: "莠去津 0.05 mg/kg" }
+        ]
+    },
+    {
+        id: "V3", group: "seedling", stage: "V3-V5 苗期 (Seedling)", icon: "grass",
+        temp: "日均 18-22℃", water: "适度蹲苗",
+        desc: "除草最佳窗口期。生长点位于地下(V6前)，对轻微霜冻/冰雹有耐受力。如遇低温/缺磷/根系受阻，叶片可能变紫(花青素积累)。",
+        alert: "除草剂药害预警：避开高温，避开3叶前5叶后。紫苗通常随气温回升消失。",
+        recipes: [
+            { name: "方案A: 标准除草 (安全型)", mix: "烟嘧磺隆·莠去津 + 安全剂（异恶唑草醚、解草嗪、解草胺）", pros: "杀草谱广，对玉米相对安全。", cons: "对由于环境压力大的弱苗可能有轻微抑制。", phi: "30-45天", mrl: "莠去津 0.05 mg/kg" },
+            { name: "方案B: 苗后除草+提苗复配", mix: "烟嘧·莠 + 氨基酸水溶肥 + 芸苔素内酯", pros: "除草同时缓解药害，促进生长，叶片浓绿。", cons: "混配需注意酸碱性，成本增加。" },
+            { name: "方案C: 辛酰溴苯腈 (精准窗口型)", mix: "辛酰溴苯腈", pros: "3-4叶期效果极佳，对阔叶杂草特效。", cons: "严格限制在玉米3-4叶期使用。", phi: "见标签", mrl: "0.1 mg/kg" }
+        ]
+    },
+    {
+        id: "V6", group: "seedling", stage: "V6-V8 拔节期 (Jointing)", icon: "nature",
+        temp: "生长旺盛期", water: "需水增加",
+        desc: "生长点出土，茎秆快速伸长。节根成为主要根系。此时若地表干旱，易发生'无根/倒伏玉米'综合征(Rootless Corn)。需肥临界期。控旺不控肥，控旺不控长",
+        alert: "追肥提示：结合降雨或灌溉追施氮肥。若遇洪涝，淹水不可超2-4天。",
+        recipes: [
+            { name: "方案A: 营养补充型", mix: "尿素(叶喷) + 磷酸二氢钾 + 螯合锌", pros: "纠正缺锌花白叶，促进茎秆粗壮。", cons: "单纯营养，无防虫功能。" },
+            { name: "方案B: 药肥一体防虫", mix: "氯虫苯甲酰胺 + 甲维盐 + 腐植酸叶面肥", pros: "强力杀灭二代粘虫、玉米螟，持效期长。", cons: "氯虫苯甲酰胺单价较高。", phi: "21天", mrl: "氯虫 0.02 mg/kg" },
+            { name: "方案C: 化学控旺 (防倒伏专用)", mix: "乙烯利+磷酸二氢钾 / 胺鲜酯·乙烯利", pros: "降低株高，增粗茎秆，显著抗倒伏。", cons: "需严格把控浓度与时期，干旱禁用。", phi: "见标签", mrl: "乙烯利 0.5 mg/kg" }
+        ]
+    },
+    {
+        id: "V12", group: "ear", stage: "V9-V12 大喇叭口 (Bell Mouth)", icon: "local_florist",
+        temp: "高温高湿", water: "需水高峰",
+        desc: "V9雄穗发育。V12时，种子行数已确定(受遗传主导)。每行粒数开始决定(V12-V17)。此期受旱或叶片损伤将严重影响穗大小。最佳时期是V10到V12阶段。",
+        alert: "关键节点：行数已定，主攻粒数。此期受旱减产最严重。",
+        recipes: [
+            { name: "方案A: 攻穗防虫型", mix: "辛硫磷颗粒(丢心) + 尿素(根施)", pros: "传统方法，成本极低，效果直接。", cons: "人工成本高，效率低。", phi: "见标签", mrl: "0.05 mg/kg" },
+            { name: "方案B: 飞防高效包", mix: "甲维·茚虫威 + 吡唑醚菌酯 + 磷酸二氢钾", pros: "杀虫彻底，防大斑病，叶片保绿。", cons: "需无人机作业。", phi: "14天", mrl: "茚虫威 0.1 mg/kg" }
+        ]
+    },
+    {
+        id: "VT", group: "ear", stage: "VT-R1 抽雄吐丝 (Tasseling)", icon: "filter_vintage",
+        temp: "忌>30-35℃高温", water: "必须充足",
+        desc: "授粉期。花粉散落高峰在上午9-10点。高温(>30℃)减少散粉。干旱每天减产3-8%。冰雹致叶片脱落可致100%减产。见雄喷药，见丝增效，雄穗刚全部抽出，或者有 10% - 20% 的植株开始露出花丝时",
+        alert: "热害预警：防花丝'结球'。虫害阈值：花丝被咬断至<1cm且授粉<50%需防治。",
+        recipes: [
+            { name: "方案A: 授粉保卫战", mix: "流体硼 + 芸苔素内酯 + 磷酸二氢钾", pros: "提高花粉活力，减少秃尖，抗热干风。", cons: "无杀菌杀虫功能。" },
+            { name: "方案B: 一喷多效旗舰版", mix: "吡唑醚菌酯 + 噻虫嗪 + 苯甲(苯醚甲环唑)·丙环唑 + 硼 + 磷酸二氢钾", pros: "防病(锈病/斑病)、防虫(蚜虫)、增产全覆盖。", cons: "单亩成本最高，但投入产出比高。", phi: "28天", mrl: "噻虫嗪 0.1 mg/kg" }
+        ]
+    },
+    {
+        id: "R2", group: "grain", stage: "R2-R4 灌浆乳熟 (Filling)", icon: "grain",
+        temp: "昼夜温差大好", water: "保持湿润",
+        desc: "籽粒建成期。水泡期(R2)至乳熟期(R3)。若遇连续阴天、干旱 or 氮不足，尖端籽粒易败育(Abortion)。",
+        alert: "⚠️ 适时晚收：苞叶变黄后推迟7-10天收获，增产5-10%。注意：若后期喷施苯醚甲环唑，需留足7-14天安全间隔期。",
+        recipes: [
+            { name: "方案A: 防衰增重", mix: "高浓度磷酸二氢钾 (100-200g/亩)", pros: "促进灌浆，增加千粒重，防止倒伏。", cons: "功能单一。" },
+            { name: "方案B: 杀菌防病晚收", mix: "苯醚甲环唑 + 戊唑醇/氟环唑 + 磷酸二氢钾", pros: "特效治疗南方锈病，保叶功能强。", cons: "后期作业需高杆喷雾机 or 飞机。", phi: "7-14天", mrl: "苯甲 0.5 mg/kg" }
+        ]
+    }
+];
+
+function renderFullProtection(filter) {
+    const list = document.getElementById('protection-list');
+    list.innerHTML = '';
+    const filtered = filter === 'all' ? fullProtectionDB : fullProtectionDB.filter(i => i.group === filter);
+    filtered.forEach((item) => {
+        const optionsHtml = item.recipes.map((r, rIdx) => `<option value="${rIdx}">${r.name}</option>`).join('');
+        const isCurrent = (currentStageIdx >= 0 && STAGES[currentStageIdx] &&
+                           ((item.id === 'VE' && ['sowing','seedling'].includes(STAGES[currentStageIdx].key)) ||
+                            (item.id === 'V3' && STAGES[currentStageIdx].key === 'seedling') ||
+                            (item.id === 'V6' && STAGES[currentStageIdx].key === 'jointing') ||
+                            (item.id === 'V12' && STAGES[currentStageIdx].key === 'bellmouth') ||
+                            (item.id === 'VT' && STAGES[currentStageIdx].key === 'tassel') ||
+                            (item.id === 'R2' && STAGES[currentStageIdx].key === 'filling')));
+        const card = document.createElement('div');
+        card.className = "bg-gray-50 rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition duration-300";
+        card.innerHTML = `
+            <div class="p-4 border-b border-gray-200 bg-white flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                <div class="flex items-center gap-3">
+                    ${isCurrent ? '<span class="bg-red-500 text-white text-sm px-2 py-0.5 rounded-full font-bold">● 当前阶段</span>' : ''}
+                    <div class="bg-green-100 p-2 rounded-full text-green-700"><span class="material-symbols-outlined">${item.icon}</span></div>
+                    <div>
+                        <h4 class="font-bold text-gray-800 text-lg">${item.stage}</h4>
+                        <div class="flex gap-2 text-sm mt-1">
+                            <span class="bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-100 flex items-center gap-1"><span class="material-symbols-outlined text-sm">thermostat</span> ${item.temp}</span>
+                            <span class="bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-100 flex items-center gap-1"><span class="material-symbols-outlined text-sm">water_drop</span> ${item.water}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full md:w-auto">
+                    <span class="text-xs font-bold text-red-500 bg-red-50 px-2 py-1 rounded border border-red-100 block md:inline text-center">⚠️ ${item.alert}</span>
+                </div>
+            </div>
+            <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    <p class="text-sm text-gray-600 leading-relaxed">${item.desc}</p>
+                    <div class="mt-4">
+                        <label class="text-sm font-bold text-gray-500 block mb-1">选择植保方案:</label>
+                        <select class="w-full border-2 border-green-200 rounded p-2 text-sm font-bold text-green-800 bg-white focus:border-green-500 outline-none transition"
+                                onchange="updateRecipeDetails('${item.id}', this.value)">
+                            ${optionsHtml}
+                        </select>
+                    </div>
+                </div>
+                <div class="bg-white rounded border border-gray-200 p-3 shadow-inner" id="details-${item.id}"></div>
+            </div>`;
+        list.appendChild(card);
+        updateRecipeDetails(item.id, 0);
+    });
+}
+
+function updateRecipeDetails(itemId, recipeIdx) {
+    const item = fullProtectionDB.find(i => i.id === itemId);
+    const recipe = item.recipes[recipeIdx];
+    const el = document.getElementById('details-' + itemId);
+    if (!recipe) return;
+    el.innerHTML = `
+        <div class="h-full flex flex-col justify-center space-y-2">
+            <div class="border-b pb-2 mb-1">
+                <span class="text-xs text-gray-400 font-bold uppercase tracking-wider">配方成分</span>
+                <div class="text-sm font-bold text-green-700 break-words">${recipe.mix}</div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+                <div><span class="text-green-600 font-bold block">👍 优点</span><span class="text-gray-500">${recipe.pros}</span></div>
+                <div><span class="text-red-500 font-bold block">👎 缺点/注意</span><span class="text-gray-500">${recipe.cons}</span></div>
+                ${recipe.phi ? `<div><span class="text-blue-600 font-bold block">⏱ 安全间隔</span><span class="text-gray-500">${recipe.phi}</span></div>` : ''}
+                ${recipe.mrl ? `<div><span class="text-orange-600 font-bold block">🔬 残留限量</span><span class="text-gray-500">${recipe.mrl}</span></div>` : ''}
+            </div>
+        </div>`;
+}
+
+function filterProtection(val) { protectionFilter = val; renderFullProtection(val); }
+
+/* ================= 施肥计算（斯坦福方程·养分平衡，对齐 v4.5.1 逻辑） ================= */
+// 参数依据（FAO / IPNI，算法: 养分平衡-斯坦福方程）：
+// 每100kg籽粒需肥（干粮14%口径）：N 2.3 / P2O5 0.9 / K2O 2.3 (kg)
+// 土壤修正系数：经验=质地+地力；测土=按 N/P/K 分级 0.8/1.0/1.2
+// 秸秆处理：还田增氮 2.0kg/亩、减磷 0.5kg/亩、钾归还80%；焚烧减磷0.5、钾归还65%；移出钾归还5%
+const NEED_RATE = { n: 2.3, p: 0.9, k: 2.3 };
+// 有机肥养分含量与当季矿化利用率（从净需求中抵扣）
+const OM_TYPES = {
+    farm:       { name: '腐熟农家肥', npct: 0.45, ppct: 0.25, kpct: 0.60, effN: 0.30, effP: 0.35, effK: 0.60 },
+    commercial: { name: '商品有机肥', npct: 2.0,  ppct: 1.0,  kpct: 2.0,  effN: 0.30, effP: 0.35, effK: 0.60 }
+};
+
+function getSoilCorrection() {
+    // 返回 { n, p, k } 土壤修正系数（乘在需肥量上）：<1 肥沃减量 / >1 贫瘠增量
+    if (currentSoilLevel === 1) {
+        const type = document.getElementById('soilL1Type').value;
+        const yieldLvl = document.querySelector('input[name="soilL1Yield"]:checked').value;
+        const avg = 1.0
+            + (type === 'high' ? -0.15 : (type === 'low' ? 0.15 : 0))
+            + (yieldLvl === 'high' ? -0.05 : (yieldLvl === 'low' ? 0.1 : 0));
+        return { n: avg, p: avg, k: avg };
+    }
+    // 测土：按水解氮 / 有效磷 / 速效钾 分级修正
+    const vN = safeNum(document.getElementById('soilL3N').value, 120);
+    const vP = safeNum(document.getElementById('soilL3P').value, 30);
+    const vK = safeNum(document.getElementById('soilL3K').value, 110);
+    return {
+        n: vN > 150 ? 0.8 : (vN < 90 ? 1.2 : 1.0),
+        p: vP > 40 ? 0.8 : (vP < 15 ? 1.2 : 1.0),
+        k: vK > 130 ? 0.8 : (vK < 80 ? 1.2 : 1.0)
+    };
+}
+
+/* 目标产量：湿粮输入 → 折合 14% 标准干粮（v4.5.1 口径） */
+function currentMoisture() {
+    return clamp(safeNum(document.getElementById('inputMoisture').value, 30), 14, 40);
+}
+
+function calculateAll() {
+    const unit = document.getElementById('unitSelect').value;
+    const areaFactor = unit === 'ha' ? 15 : 1;
+    const areaName = unit === 'ha' ? '公顷' : '亩';
+    document.querySelectorAll('.unit-label').forEach(e => e.textContent = 'kg/' + areaName);
+    document.querySelectorAll('.unit-area-name').forEach(e => e.textContent = areaName);
+    document.querySelectorAll('.unit-area-label').forEach(e => e.textContent = 'kg/' + areaName);
+
+    // 目标产量：湿粮输入，按含水率折合 14% 标准干粮（需肥量按干粮计算）
+    const rawYield = Math.max(0, safeNum(document.getElementById('inputYield').value, 0));
+    const moisture = currentMoisture();
+    document.getElementById('moistureDisplay').textContent = moisture + '%';
+    const stdYield = moisture <= 14 ? rawYield : rawYield * (1 - moisture / 100) / 0.86;
+    document.getElementById('stdYieldDisplay').textContent = stdYield.toFixed(0);
+
+    // 公告产量对照（同一含水率下换算湿粮）
+    const ctrlAvg = varietyMatched && varietyMatched.avgYieldMu ? varietyMatched.avgYieldMu * areaFactor : null;
+    const ctrlMax = varietyMatched && varietyMatched.maxYieldMu ? varietyMatched.maxYieldMu * areaFactor : null;
+    const ctrlAvgWet = ctrlAvg ? (moisture <= 14 ? ctrlAvg : ctrlAvg * 0.86 / (1 - moisture / 100)) : null;
+    const ctrlMaxWet = ctrlMax ? (moisture <= 14 ? ctrlMax : ctrlMax * 0.86 / (1 - moisture / 100)) : null;
+    document.getElementById('announceAvgWet').textContent = ctrlAvgWet ? ctrlAvgWet.toFixed(0) + ' kg/' + areaName : '—（未匹配品种）';
+    document.getElementById('announceMaxWet').textContent = ctrlMaxWet ? ctrlMaxWet.toFixed(0) + ' kg/' + areaName : '—（未匹配品种）';
+    const gapEl = document.getElementById('yieldGapBadge');
+    if (ctrlAvg && stdYield > 0) {
+        const gap = (stdYield - ctrlAvg) / ctrlAvg * 100;
+        const cls = Math.abs(gap) <= 3 ? 'text-green-600' : (Math.abs(gap) <= 10 ? 'text-amber-600' : 'text-red-600');
+        gapEl.className = 'font-bold ' + cls;
+        gapEl.textContent = (gap >= 0 ? '+' : '') + gap.toFixed(1) + '%';
+    } else {
+        gapEl.className = 'font-bold text-gray-400';
+        gapEl.textContent = '—';
+    }
+
+    // ===== 需肥计算（斯坦福方程 × 土壤修正系数，对齐 v4.5.1） =====
+    // 需肥量 = 干粮产量/100 × 需肥系数(2.3/0.9/2.3) × 土壤修正系数
+    const soilCF = getSoilCorrection();
+    const reqN0 = (stdYield / 100) * NEED_RATE.n * soilCF.n;
+    const reqP0 = (stdYield / 100) * NEED_RATE.p * soilCF.p;
+    const reqK0 = (stdYield / 100) * NEED_RATE.k * soilCF.k;
+    const meanCF = (soilCF.n + soilCF.p + soilCF.k) / 3;
+    const cfMeanEl = document.getElementById('soilCFMean');
+    if (cfMeanEl) cfMeanEl.textContent = meanCF.toFixed(2);
+    document.getElementById('soilSupplyN').textContent = soilCF.n.toFixed(2);
+    document.getElementById('soilSupplyP').textContent = soilCF.p.toFixed(2);
+    document.getElementById('soilSupplyK').textContent = soilCF.k.toFixed(2);
+
+    // 秸秆处理（还田增氮减磷、钾按归还率抵扣，v4.5.1 逻辑）
+    const strawType = document.getElementById('strawSelect').value;
+    const fb = document.getElementById('soilHealthFeedback');
+    let strawNAdd = 0;        // 秸秆还田需额外补氮（碳氮比）
+    let strawPReduce = 0;     // 还田/焚烧的磷灰分归还（抵扣需求）
+    let supplyK_Straw = 0;    // 秸秆归还的钾（抵扣需求）
+    if (strawType === 'return') {
+        strawNAdd = 2.0 * areaFactor;
+        strawPReduce = 0.5 * areaFactor;
+        supplyK_Straw = reqK0 * 0.80;
+        fb.className = "mt-2 p-2 rounded text-xs border flex flex-col gap-1 bg-yellow-50 border-yellow-200 text-yellow-800";
+        fb.innerHTML = '<div class="font-bold">⚠ 碳氮比调节：</div><div>1. 氮肥↑ (微生物消耗 +2.0kg/亩)。</div><div>2. 钾肥↓ (秸秆归还80%)。</div>';
+    } else if (strawType === 'burn') {
+        strawPReduce = 0.5 * areaFactor;
+        supplyK_Straw = reqK0 * 0.65;
+        fb.className = "mt-2 p-2 rounded text-xs border flex flex-col gap-1 bg-orange-50 border-orange-200 text-orange-800";
+        fb.innerHTML = '<div class="font-bold">🔥 焚烧模式：</div><div>氮损失，钾以灰分归还约65%。</div>';
+    } else {
+        supplyK_Straw = reqK0 * 0.05;
+        fb.className = "mt-2 p-2 rounded text-xs border flex flex-col gap-1 bg-red-50 border-red-200 text-red-800";
+        fb.innerHTML = '<div class="font-bold">❗ 秸秆移出：</div><div>养分透支，需足量补充钾磷。</div>';
+    }
+
+    // 有机肥当季供肥（v5.0 增强：按当季矿化利用率抵扣净需求）
+    const omType = OM_TYPES[document.getElementById('omType').value];
+    const omAmt = Math.max(0, safeNum(document.getElementById('omAmount').value, 0)) * areaFactor;
+    const omN = omAmt * omType.npct / 100 * omType.effN;
+    const omP = omAmt * omType.ppct / 100 * omType.effP;
+    const omK = omAmt * omType.kpct / 100 * omType.effK;
+
+    // 净需求（化肥需补足的纯养分）
+    const reqN = Math.max(0, reqN0 + strawNAdd - omN);
+    const reqP = Math.max(0, reqP0 - strawPReduce - omP);
+    const reqK = Math.max(0, reqK0 - omK);
+    const targetK = Math.max(0, reqK - supplyK_Straw);   // 扣秸秆归还钾后的钾缺口
+
+    // 种肥（固定 5kg/亩，与基肥氮磷钾一并计入供给）
+    const seedVal = document.getElementById('seedFertSelect').value;
+    const seedData = getFertData(seedVal, 'seed');
+    const seedAmt = seedVal === '-1' ? 0 : 5 * areaFactor;
+    const seedN = seedAmt * seedData.n / 100;
+    const seedP = seedAmt * seedData.p / 100;
+    const seedK = seedAmt * seedData.k / 100;
+
+    // 基肥：由磷缺口决定实物量（v4.5.1：baseAmt = 磷缺口 ÷ 基肥含磷率）
+    const baseVal = document.getElementById('baseFertSelect').value;
+    const baseData = getFertData(baseVal, 'base');
+    const baseAmt = Math.max(0, reqP - seedP) / (baseData.p / 100 || 1);
+    const baseN = baseAmt * baseData.n / 100;
+    const baseK = baseAmt * baseData.k / 100;
+
+    // 尿素（46%N）补足氮缺口：尿素 = 氮缺口 ÷ 46%
+    const ureaTotal = Math.max(0, reqN - seedN - baseN) / 0.46;
+    // 分次展示（总量不变）：基施40% + 拔节35% + 大喇叭口25%
+    const baseUrea = ureaTotal * 0.40, ureaJoint = ureaTotal * 0.35, ureaBell = ureaTotal * 0.25;
+    // 氯化钾（60%K₂O）补足钾缺口：缺口>2kg/亩 才补，防过量
+    const kGap = Math.max(0, targetK - seedK - baseK);
+    const kCl = kGap > (2 * areaFactor) ? kGap / 0.60 : 0;
+
+    // 锌肥建议
+    const znEl = document.getElementById('znAdvice');
+    let znText = '';
+    if (currentSoilLevel === 3) {
+        const zn = safeNum(document.getElementById('soilL3Zn').value, 0.8);
+        znText = zn < 1.0
+            ? '⚠ 土壤有效锌 ' + zn.toFixed(1) + ' mg/kg 偏低：建议基施硫酸锌 1-1.5kg/亩，或叶面喷施螯合锌，防花白苗。'
+            : '✓ 土壤有效锌 ' + zn.toFixed(1) + ' mg/kg 正常，无需单独补锌。';
+    } else {
+        const type = document.getElementById('soilL1Type').value;
+        znText = type === 'low'
+            ? '⚠ 沙性土壤缺锌风险较高：建议基施硫酸锌 1-1.5kg/亩，防花白苗（玉米对锌敏感）。'
+            : 'ℹ️ 玉米对锌敏感，如遇花白叶、节间缩短可叶面补锌（硫酸锌0.1-0.2%溶液）。';
+    }
+    znEl.innerHTML = znText;
+
+    // 结果输出
+    document.getElementById('resSeedAmount').innerText = fmt1(seedAmt);
+    document.getElementById('resSeedName').innerText = seedData.name || '推荐施肥量';
+    document.getElementById('resBaseAmount').innerText = fmt1(baseAmt);
+    document.getElementById('resBaseName').innerText = baseData.name || '推荐施肥量';
+    document.getElementById('resUreaAmount').innerText = fmt1(ureaTotal);
+    document.getElementById('ureaReason').innerText = '基施' + fmt1(baseUrea) + ' + 拔节' + fmt1(ureaJoint) + ' + 喇叭口' + fmt1(ureaBell) + ' kg';
+    document.getElementById('ureaJoint').innerText = fmt1(ureaJoint);
+    document.getElementById('ureaBell').innerText = fmt1(ureaBell);
+    document.getElementById('resKAmount').innerText = fmt1(kCl);
+    document.getElementById('kReason').innerText = '基施60% · 大喇叭口期追施40%';
+    document.getElementById('resOMAmount').innerText = Math.round(omAmt).toString();
+    document.getElementById('omReason').innerText = omAmt > 0 ? ('整地全层施入 · 当季有效 N' + fmt1(omN) + '/P' + fmt1(omP) + '/K' + fmt1(omK) + ' kg') : '未施用有机肥';
+
+    // 养分平衡明细表（总需求 ×修正系数 | 秸秆调节 | 有机肥当季 | 化肥补充纯量）
+    document.getElementById('balN1').textContent = fmt1(reqN0);
+    document.getElementById('balN2').textContent = fmt1(strawNAdd);
+    document.getElementById('balN3').textContent = fmt1(omN);
+    document.getElementById('balN4').textContent = fmt1(reqN);
+    document.getElementById('balP1').textContent = fmt1(reqP0);
+    document.getElementById('balP2').textContent = '-' + fmt1(strawPReduce);
+    document.getElementById('balP3').textContent = fmt1(omP);
+    document.getElementById('balP4').textContent = fmt1(reqP);
+    document.getElementById('balK1').textContent = fmt1(reqK0);
+    document.getElementById('balK2').textContent = fmt1(supplyK_Straw);
+    document.getElementById('balK3').textContent = fmt1(omK);
+    document.getElementById('balK4').textContent = fmt1(targetK);
+
+    // 成本
+    const pSeed = safeNum(document.getElementById('priceSeed').value, 0);
+    const pBase = safeNum(document.getElementById('priceBase').value, 0);
+    const pUrea = safeNum(document.getElementById('priceUrea').value, 0);
+    const pK = safeNum(document.getElementById('priceK').value, 0);
+    const pOM = safeNum(document.getElementById('priceOM').value, 0);
+    let cFoliar = 0;
+    if (document.getElementById('checkV6').checked)  cFoliar += safeNum(document.getElementById('inputPriceV6').value, 0);
+    if (document.getElementById('checkV12').checked) cFoliar += safeNum(document.getElementById('inputPriceV12').value, 0);
+    if (document.getElementById('checkVT').checked)  cFoliar += safeNum(document.getElementById('inputPriceVT').value, 0);
+    const cSeed = seedAmt * pSeed, cBase = baseAmt * pBase, cUrea = ureaTotal * pUrea, cK = kCl * pK, cOM = omAmt * pOM;
+
+    document.getElementById('costSeed').innerText = cSeed.toFixed(0);
+    document.getElementById('costBase').innerText = cBase.toFixed(0);
+    document.getElementById('costUrea').innerText = cUrea.toFixed(0);
+    document.getElementById('costK').innerText = cK.toFixed(0);
+    document.getElementById('costOM').innerText = cOM.toFixed(0);
+    document.getElementById('costFoliar').innerText = cFoliar.toFixed(0);
+    document.getElementById('totalCost').innerText = (cSeed + cBase + cUrea + cK + cOM + cFoliar).toFixed(1);
+
+    // 图表（需求=毛需求，供给=有机肥+秸秆归还+种/基肥+追肥，堆叠自洽）
+    const supplyData = {
+        organic: [omN, omP, omK],
+        straw: [0, 0, supplyK_Straw],
+        base: [seedN + baseN + baseUrea * 0.46, seedP + baseP, seedK + baseK + kCl * 0.6 * 0.6],
+        top: [ureaJoint * 0.46 + ureaBell * 0.46, 0, kCl * 0.6 * 0.4]
+    };
+    const demand = [reqN0 + strawNAdd, reqP0, reqK0];
+    updateChart(demand, supplyData, areaName);
+}
+
+function getFertData(val, type) {
+    if (val === '-1') return { name: '未施用', n: 0, p: 0, k: 0 };
+    if (val === 'custom') {
+        const prefix = type === 'seed' ? 'customSeed' : 'customBase';
+        return {
+            n: safeNum(document.getElementById(prefix + 'N').value, 0),
+            p: safeNum(document.getElementById(prefix + 'P').value, 0),
+            k: safeNum(document.getElementById(prefix + 'K').value, 0),
+            name: '自定义'
+        };
+    }
+    return fertilizers[val];
+}
+
+function renderFertOptions() {
+    const seed = document.getElementById('seedFertSelect');
+    const base = document.getElementById('baseFertSelect');
+    seed.innerHTML = '<option value="-1">🚫 不施种肥</option>';
+    base.innerHTML = '';
+    fertilizers.forEach((f, i) => {
+        const opt = new Option(f.name, i);
+        seed.add(opt.cloneNode(true));
+        base.add(opt.cloneNode(true));
+    });
+    const custom = new Option("🛠 自定义配方...", "custom");
+    seed.add(custom.cloneNode(true));
+    base.add(custom.cloneNode(true));
+    // 默认基肥选用高磷配方（12-18-15），避免低磷复合肥导致实物量虚高
+    const pIdx = fertilizers.findIndex(f => f.name.includes('12-18-15'));
+    base.selectedIndex = pIdx >= 0 ? pIdx : 0;
+}
+
+function handleFertTypeChange(type) {
+    const val = document.getElementById(type + 'FertSelect').value;
+    document.getElementById('custom-' + type + '-wrap').classList.toggle('hidden', val !== 'custom');
+    calculateAll();
+}
+
+function switchSoilLevel(level) {
+    currentSoilLevel = level;
+    [1, 3].forEach(l => {
+        document.getElementById('btn-soil-l' + l).classList.toggle('active', l === level);
+        document.getElementById('soil-level-' + l).classList.toggle('hidden', l !== level);
+    });
+    calculateAll();
+}
+
+function fillDemoLabData() {
+    document.getElementById('soilL3PH').value = 6.8;
+    document.getElementById('soilL3TN').value = 1.8;
+    document.getElementById('soilL3OM').value = 35;
+    document.getElementById('soilL3N').value = 150;
+    document.getElementById('soilL3P').value = 45;
+    document.getElementById('soilL3K').value = 140;
+    document.getElementById('soilL3Zn').value = 1.2;
+    calculateAll();
+}
+
+function updateChart(demand, supply, areaName) {
+    const ctx = document.getElementById('fertChart').getContext('2d');
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['纯氮(N)', '纯磷(P₂O₅)', '纯钾(K₂O)'],
+            datasets: [
+                { label: '总需求', data: demand, type: 'line', borderColor: '#9ca3af', borderWidth: 2, borderDash: [5, 5], pointStyle: 'crossRot', tension: 0.2 },
+                { label: '有机肥当季', data: supply.organic, backgroundColor: '#10b981', stack: 's' },
+                { label: '秸秆归还', data: supply.straw, backgroundColor: '#fbbf24', stack: 's' },
+                { label: '种/基肥', data: supply.base, backgroundColor: '#16a34a', stack: 's' },
+                { label: '追肥/补钾', data: supply.top, backgroundColor: '#3b82f6', stack: 's' }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true, title: { display: true, text: 'kg/' + areaName } } },
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+}
+
+function updateChartRender() { if (typeof Chart !== 'undefined') { /* chart 已由 calculateAll 维护 */ } }
+
+/* ================= 气象逆境引擎 ================= */
+/* 东北三省+蒙东 219 县市 (id, name, lat, lon, province) */
+const NE_TOWNS = [
+[1,"哈尔滨市",45.58,126.29,"黑龙江省"],[2,"尚志市",45.21,127.96,"黑龙江省"],[3,"五常市",44.92,127.16,"黑龙江省"],[4,"巴彦县",46.08,127.4,"黑龙江省"],[5,"宾县",45.75,127.48,"黑龙江省"],[6,"方正县",45.83,128.82,"黑龙江省"],[7,"木兰县",45.95,128.04,"黑龙江省"],[8,"通河县",45.97,128.75,"黑龙江省"],[9,"延寿县",45.45,128.33,"黑龙江省"],[10,"依兰县",46.31,129.56,"黑龙江省"],[11,"齐齐哈尔市",47.35,123.84,"黑龙江省"],[12,"讷河市",48.46,124.88,"黑龙江省"],[13,"拜泉县",47.6,126.09,"黑龙江省"],[14,"富裕县",47.77,124.47,"黑龙江省"],[15,"甘南县",47.91,123.5,"黑龙江省"],[16,"克东县",48.04,126.25,"黑龙江省"],[17,"克山县",48.04,125.88,"黑龙江省"],[18,"龙江县",47.33,123.2,"黑龙江省"],[19,"泰来县",46.39,123.41,"黑龙江省"],[20,"依安县",47.89,125.3,"黑龙江省"],[21,"牡丹江市",44.57,129.55,"黑龙江省"],[22,"东宁市",44.09,131.12,"黑龙江省"],[23,"海林市",44.59,129.37,"黑龙江省"],[24,"穆棱市",44.92,130.52,"黑龙江省"],[25,"宁安市",44.34,129.48,"黑龙江省"],[26,"绥芬河市",44.41,131.16,"黑龙江省"],[27,"林口县",45.28,130.27,"黑龙江省"],[28,"佳木斯市",46.8,130.31,"黑龙江省"],[29,"抚远市",48.36,134.3,"黑龙江省"],[30,"富锦市",46.33,132.19,"黑龙江省"],[31,"同江市",47.64,132.5,"黑龙江省"],[32,"桦川县",46.24,130.55,"黑龙江省"],[33,"桦南县",46.24,130.55,"黑龙江省"],[34,"汤原县",46.73,129.9,"黑龙江省"],[35,"大庆市",46.58,125.1,"黑龙江省"],[36,"杜尔伯特蒙古族自治县",46.86,124.44,"黑龙江省"],[37,"林甸县",47.17,124.86,"黑龙江省"],[38,"肇源县",45.52,125.08,"黑龙江省"],[39,"肇州县",45.7,125.26,"黑龙江省"],[40,"鸡西市",45.3,125.1,"黑龙江省"],[41,"虎林市",45.76,132.93,"黑龙江省"],[42,"密山市",45.53,131.84,"黑龙江省"],[43,"鸡东县",45.26,131.12,"黑龙江省"],[44,"双鸭山市",46.64,131.15,"黑龙江省"],[45,"宝清县",46.33,132.19,"黑龙江省"],[46,"集贤县",46.73,131.13,"黑龙江省"],[47,"饶河县",46.79,134.01,"黑龙江省"],[48,"友谊县",46.77,131.8,"黑龙江省"],[49,"伊春市",47.72,128.84,"黑龙江省"],[50,"铁力市",46.98,128.02,"黑龙江省"],[51,"大箐山县",47.14,129.28,"黑龙江省"],[52,"丰林县",48.29,129.53,"黑龙江省"],[53,"嘉荫县",48.89,130.39,"黑龙江省"],[54,"南岔县",47.14,129.28,"黑龙江省"],[55,"汤旺县",48.45,129.43,"黑龙江省"],[56,"七台河市",45.77,131.0,"黑龙江省"],[57,"勃利县",45.75,130.57,"黑龙江省"],[58,"鹤岗市",47.35,130.29,"黑龙江省"],[59,"萝北县",47.57,130.84,"黑龙江省"],[60,"绥滨县",47.29,131.85,"黑龙江省"],[61,"黑河市",50.24,127.52,"黑龙江省"],[62,"北安市",48.24,126.49,"黑龙江省"],[63,"嫩江市",49.18,125.22,"黑龙江省"],[64,"五大连池市",48.51,126.19,"黑龙江省"],[65,"孙吴县",49.43,127.33,"黑龙江省"],[66,"逊克县",49.57,128.48,"黑龙江省"],[67,"绥化市",46.65,126.96,"黑龙江省"],[68,"安达市",46.45,125.3,"黑龙江省"],[69,"海伦市",47.46,126.97,"黑龙江省"],[70,"肇东市",46.06,125.98,"黑龙江省"],[71,"兰西县",46.26,126.29,"黑龙江省"],[72,"明水县",47.17,125.91,"黑龙江省"],[73,"青冈县",46.69,126.1,"黑龙江省"],[74,"庆安县",46.88,127.5,"黑龙江省"],[75,"绥棱县",47.24,127.11,"黑龙江省"],[76,"望奎县",46.83,126.48,"黑龙江省"],[77,"加格达奇区",52.5,123.9,"黑龙江省"],[78,"漠河市",52.97,122.54,"黑龙江省"],[79,"呼玛县",51.73,126.65,"黑龙江省"],[80,"塔河县",52.33,124.7,"黑龙江省"],[81,"长春市",43.88,125.31,"吉林省"],[82,"公主岭市",43.5,124.82,"吉林省"],[83,"德惠市",44.53,125.7,"吉林省"],[84,"榆树市",44.82,126.55,"吉林省"],[85,"农安县",44.43,125.18,"吉林省"],[86,"吉林市",43.83,126.55,"吉林省"],[87,"蛟河市",43.72,127.34,"吉林省"],[88,"桦甸市",42.97,126.74,"吉林省"],[89,"舒兰市",44.41,126.96,"吉林省"],[90,"磐石市",42.94,126.06,"吉林省"],[91,"永吉县",43.67,126.5,"吉林省"],[92,"四平市",43.16,124.35,"吉林省"],[93,"双辽市",43.52,123.5,"吉林省"],[94,"梨树县",43.3,124.33,"吉林省"],[95,"伊通满族自治县",43.34,125.3,"吉林省"],[96,"辽源市",42.88,125.14,"吉林省"],[97,"东丰县",42.67,125.53,"吉林省"],[98,"东辽县",42.92,124.99,"吉林省"],[99,"通化市",41.73,125.94,"吉林省"],[100,"梅河口市",42.53,125.68,"吉林省"],[101,"集安市",41.12,126.19,"吉林省"],[102,"通化县",41.68,125.76,"吉林省"],[103,"辉南县",42.68,126.04,"吉林省"],[104,"柳河县",42.28,125.74,"吉林省"],[105,"白山市",41.93,126.42,"吉林省"],[106,"临江市",41.81,126.92,"吉林省"],[107,"抚松县",42.33,127.28,"吉林省"],[108,"靖宇县",42.38,126.81,"吉林省"],[109,"长白朝鲜族自治县",41.41,128.2,"吉林省"],[110,"松原市",45.14,124.82,"吉林省"],[111,"扶余市",44.98,126.05,"吉林省"],[112,"长岭县",44.27,123.96,"吉林省"],[113,"乾安县",45.0,124.03,"吉林省"],[114,"前郭尔罗斯蒙古族自治县",45.11,124.82,"吉林省"],[115,"白城市",41.93,126.42,"吉林省"],[116,"洮南市",45.36,122.79,"吉林省"],[117,"大安市",45.51,124.29,"吉林省"],[118,"镇赉县",45.85,123.2,"吉林省"],[119,"通榆县",44.8,123.09,"吉林省"],[120,"延吉市",42.89,129.5,"吉林省"],[121,"图们市",42.97,129.84,"吉林省"],[122,"敦化市",43.37,128.23,"吉林省"],[123,"珲春市",42.86,130.36,"吉林省"],[124,"龙井市",42.76,129.42,"吉林省"],[125,"和龙市",42.54,129.0,"吉林省"],[126,"汪清县",43.31,129.76,"吉林省"],[127,"安图县",43.11,128.9,"吉林省"],[128,"海拉尔区",49.23,119.82,"蒙东地区"],[129,"满洲里市",49.58,117.43,"蒙东地区"],[130,"牙克石市",49.28,120.73,"蒙东地区"],[131,"扎兰屯市",48.01,122.75,"蒙东地区"],[132,"额尔古纳市",50.24,120.18,"蒙东地区"],[133,"根河市",50.78,121.52,"蒙东地区"],[134,"阿荣旗",48.12,123.45,"蒙东地区"],[135,"陈巴尔虎旗",49.33,119.43,"蒙东地区"],[136,"新巴尔虎左旗",48.22,118.27,"蒙东地区"],[137,"新巴尔虎右旗",48.67,116.82,"蒙东地区"],[138,"莫力达瓦达斡尔族自治旗",48.48,124.51,"蒙东地区"],[139,"鄂伦春自治旗",50.59,123.72,"蒙东地区"],[140,"鄂温克族自治旗",49.15,119.75,"蒙东地区"],[141,"乌兰浩特市",46.07,122.09,"蒙东地区"],[142,"阿尔山市",47.17,119.93,"蒙东地区"],[143,"突泉县",45.38,121.56,"蒙东地区"],[144,"科尔沁右翼前旗",46.08,121.95,"蒙东地区"],[145,"科尔沁右翼中旗",45.06,121.47,"蒙东地区"],[146,"扎赉特旗",46.72,122.89,"蒙东地区"],[147,"科尔沁区",43.65,122.24,"蒙东地区"],[148,"霍林郭勒市",45.53,119.66,"蒙东地区"],[149,"开鲁县",43.6,121.31,"蒙东地区"],[150,"科尔沁左翼中旗",44.12,123.31,"蒙东地区"],[151,"科尔沁左翼后旗",42.96,122.36,"蒙东地区"],[152,"库伦旗",42.73,121.81,"蒙东地区"],[153,"奈曼旗",42.84,120.66,"蒙东地区"],[154,"扎鲁特旗",44.56,120.91,"蒙东地区"],[155,"赤峰市",42.26,118.89,"蒙东地区"],[156,"林西县",43.61,118.06,"蒙东地区"],[157,"宁城县",41.6,119.34,"蒙东地区"],[158,"阿鲁科尔沁旗",43.88,120.09,"蒙东地区"],[159,"巴林左旗",43.98,119.38,"蒙东地区"],[160,"巴林右旗",43.53,118.67,"蒙东地区"],[161,"克什克腾旗",43.26,117.54,"蒙东地区"],[162,"翁牛特旗",42.94,119.02,"蒙东地区"],[163,"喀喇沁旗",41.93,118.7,"蒙东地区"],[164,"敖汉旗",42.29,119.92,"蒙东地区"],[165,"沈阳市",41.79,123.45,"辽宁省"],[166,"新民市",41.98,122.83,"辽宁省"],[167,"康平县",42.5,123.43,"辽宁省"],[168,"法库县",42.5,123.43,"辽宁省"],[169,"大连市",38.92,121.64,"辽宁省"],[170,"瓦房店市",39.62,122.0,"辽宁省"],[171,"庄河市",39.68,122.96,"辽宁省"],[172,"长海县",39.28,122.59,"辽宁省"],[173,"鞍山市",41.1,122.99,"辽宁省"],[174,"海城市",40.85,122.75,"辽宁省"],[175,"台安县",41.38,122.43,"辽宁省"],[176,"岫岩满族自治县",40.29,123.28,"辽宁省"],[177,"抚顺市",41.88,123.96,"辽宁省"],[178,"抚顺县",41.88,123.91,"辽宁省"],[179,"新宾满族自治县",41.73,125.03,"辽宁省"],[180,"清原满族自治县",42.1,124.92,"辽宁省"],[181,"本溪市",41.29,123.77,"辽宁省"],[182,"本溪满族自治县",41.3,124.11,"辽宁省"],[183,"桓仁满族自治县",41.26,125.35,"辽宁省"],[184,"丹东市",40.0,124.35,"辽宁省"],[185,"东港市",39.86,124.15,"辽宁省"],[186,"凤城市",40.45,124.06,"辽宁省"],[187,"宽甸满族自治县",40.73,124.78,"辽宁省"],[188,"锦州市",41.09,121.12,"辽宁省"],[189,"凌海市",41.16,121.35,"辽宁省"],[190,"北镇市",41.6,121.8,"辽宁省"],[191,"黑山县",41.67,122.12,"辽宁省"],[192,"义县",41.53,121.23,"辽宁省"],[193,"营口市",40.66,122.23,"辽宁省"],[194,"盖州市",40.4,122.35,"辽宁省"],[195,"大石桥市",40.63,122.51,"辽宁省"],[196,"阜新市",42.02,121.67,"辽宁省"],[197,"阜新蒙古族自治县",42.06,121.75,"辽宁省"],[198,"彰武县",42.38,122.54,"辽宁省"],[199,"辽阳市",41.26,123.23,"辽宁省"],[200,"灯塔市",41.42,123.33,"辽宁省"],[201,"辽阳县",41.2,123.1,"辽宁省"],[202,"盘锦市",41.12,122.07,"辽宁省"],[203,"盘山县",41.24,121.99,"辽宁省"],[204,"铁岭市",42.22,123.72,"辽宁省"],[205,"调兵山市",42.47,123.55,"辽宁省"],[206,"开原市",42.54,124.03,"辽宁省"],[207,"铁岭县",42.22,123.72,"辽宁省"],[208,"西丰县",42.74,124.72,"辽宁省"],[209,"昌图县",42.78,124.1,"辽宁省"],[210,"朝阳市",41.54,120.45,"辽宁省"],[211,"北票市",41.8,120.77,"辽宁省"],[212,"凌源市",41.24,119.4,"辽宁省"],[213,"朝阳县",41.57,120.45,"辽宁省"],[214,"建平县",41.4,119.64,"辽宁省"],[215,"喀喇沁左翼蒙古族自治县",41.12,119.74,"辽宁省"],[216,"葫芦岛市",40.56,120.38,"辽宁省"],[217,"兴城市",40.61,120.73,"辽宁省"],[218,"绥中县",40.32,120.34,"辽宁省"],[219,"建昌县",40.81,119.8,"辽宁省"]
+];
+const TOWN_MAP = {}; NE_TOWNS.forEach(t => { TOWN_MAP[t[0]] = { id: t[0], name: t[1], lat: t[2], lon: t[3], province: t[4] }; });
+
+let currentTown = null;          // 全局种植区域
+let weatherData = null;          // { town, days: [...], actualEnd: 'YYYY-MM-DD' }
+let varietyDB = null;            // 审定品种库（抓取完成后填充）
+let standard2025 = null;         // 2025 理想年标准曲线（按县市名索引）
+let standardLoaded = false;      // 标准曲线是否加载完成
+let gddChart = null, waterChart = null;
+let emergInfo = null;            // 出苗判定: { date:'YYYY-MM-DD', gddBefore: n }
+let stablePassInfo = null;       // 稳定通过10℃: { date:'YYYY-MM-DD' }
+
+const EMERGENCE_GDD = 200;       // 播种→出苗(露土)所需 ≥10℃ 活动积温 (℃·d)，可调
+                                 // 农学依据：出苗靠热量积累启动(活动积温)，出苗后生育期推进才用有效积温
+                                 // 实测校准(哈尔滨2026)：4/23播种，5/12观察时苗已2cm高→露土约5/10
+                                 //   活动积温累计: 5/10≈208℃·d → 阈值200 判定露土5/10 ✅（地温<气温已含补偿）
+const STABLE_T0 = 10;            // 稳定通过界限温度（玉米生物学零度）
+const STABLE_WIN = 5;            // 五日滑动平均窗口
+
+const WEATHER_REPO = 'https://raw.githubusercontent.com/wangpengcard/NE-AT-Calculation-2026/main/2026.csv';
+const FORECAST_REPO = 'https://raw.githubusercontent.com/wangpengcard/Weather-forecast-NE/main/forecasts.json';
+// 品种库按作物独立文件（2016起，三作物分开存储便于调用；文件名统一英文）
+// 瘦身后春区品种库：去嵌套、11180条、含完整审定信息（基本信息+四大文本+9提取字段）
+const VARIETY_REPO = 'https://raw.githubusercontent.com/wangpengcard/Crop-Certification-Data/main/varieties_spring_corn.json';
+// 2025 理想热年标准曲线（219县市）：换算率、出苗日、各阶段到达日、逐日积温累计
+// 与品种库同仓库（Crop-Certification-Data）；HTML 手动上传部署
+const STANDARD2025_REPO = 'https://raw.githubusercontent.com/wangpengcard/Crop-Certification-Data/main/standard_2025.json';
+
+/* 省份顺序：黑龙江 → 吉林 → 辽宁 → 蒙东地区 */
+const PROV_ORDER = ['黑龙江省', '吉林省', '辽宁省', '蒙东地区'];
+
+function fillTownSelects() {
+    const p1 = document.getElementById('provinceSelect');
+    const p2 = document.getElementById('weatherProvinceSelect');
+    p1.innerHTML = '<option value="">省份</option>';
+    p2.innerHTML = '<option value="">省份</option>';
+    PROV_ORDER.forEach(p => {
+        p1.innerHTML += '<option value="' + p + '">' + p + '</option>';
+        p2.innerHTML += '<option value="' + p + '">' + p + '</option>';
+    });
+    document.getElementById('townSelect').innerHTML = '<option value="">先选省份</option>';
+    document.getElementById('weatherTownSelect').innerHTML = '<option value="">先选省份</option>';
+}
+
+function townsOfProvince(prov) {
+    return NE_TOWNS.filter(t => t[4] === prov);
+}
+
+function fillTownOptions(selectEl, prov) {
+    const towns = townsOfProvince(prov);
+    selectEl.innerHTML = '<option value="">' + (prov ? '县市' : '先选省份') + '</option>' +
+        towns.map(t => '<option value="' + t[0] + '">' + t[1] + '</option>').join('');
+}
+
+function syncTownSelects() {
+    // 当一处选中县市后，同步另一处（含两级下拉状态）
+    const id = currentTown ? String(currentTown.id) : '';
+    const prov = currentTown ? currentTown.province : '';
+    ['townSelect', 'weatherTownSelect'].forEach(selId => {
+        const sel = document.getElementById(selId);
+        if (prov) {
+            // 确保该下拉的选项是当前省份
+            if (!Array.from(sel.options).some(o => o.value === id)) {
+                fillTownOptions(sel, prov);
+            }
+        }
+        sel.value = id || '';
+    });
+    ['provinceSelect', 'weatherProvinceSelect'].forEach(selId => {
+        document.getElementById(selId).value = prov || '';
+    });
+}
+
+function onProvinceChange(prov) {
+    fillTownOptions(document.getElementById('townSelect'), prov);
+    if (!prov) {
+        currentTown = null;
+        document.getElementById('weatherTownSelect').innerHTML = '<option value="">先选省份</option>';
+        document.getElementById('weatherProvinceSelect').value = '';
+        document.getElementById('townStatus').textContent = '选择后自动获取实况+8天预报气象数据。';
+        weatherData = null;
+        renderDualTrack();
+        weatherRefresh();
+    }
+}
+
+function onWeatherProvinceChange(prov) {
+    fillTownOptions(document.getElementById('weatherTownSelect'), prov);
+    if (!prov) {
+        currentTown = null;
+        document.getElementById('townSelect').innerHTML = '<option value="">先选省份</option>';
+        document.getElementById('provinceSelect').value = '';
+        document.getElementById('townStatus').textContent = '选择后自动获取实况+8天预报气象数据。';
+        weatherData = null;
+        weatherRefresh();
+    }
+}
+
+function setTown(id) {
+    currentTown = id ? TOWN_MAP[id] : null;
+    syncTownSelects();
+    const st = document.getElementById('townStatus');
+    if (currentTown) {
+        st.textContent = currentTown.province + ' · ' + currentTown.name + '，正在获取气象数据...';
+        loadWeatherData().then(() => {
+            st.textContent = currentTown.province + ' · ' + currentTown.name + '，气象数据已更新（实况+8天预报）。';
+            renderDualTrack();
+            weatherRefresh();
+        }).catch(e => { st.textContent = '数据获取失败：' + e.message + '（请检查网络）'; });
+    } else {
+        st.textContent = '选择后自动获取实况+8天预报气象数据。';
+        weatherData = null;
+        renderDualTrack();
+        weatherRefresh();
+    }
+}
+
+function weatherSelectTown(id) {
+    currentTown = id ? TOWN_MAP[id] : null;
+    syncTownSelects();
+    const st = document.getElementById('townStatus');
+    if (currentTown) {
+        st.textContent = currentTown.province + ' · ' + currentTown.name + '，正在获取气象数据...';
+        loadWeatherData().then(() => {
+            st.textContent = currentTown.province + ' · ' + currentTown.name + '，气象数据已更新。';
+            renderDualTrack();
+            weatherRefresh();
+        }).catch(e => { st.textContent = '数据获取失败：' + e.message; });
+    } else {
+        st.textContent = '选择后自动获取实况+8天预报气象数据。';
+        weatherData = null;
+        weatherRefresh();
+    }
+}
+
+function parseCSV(text) {
+    const rows = [];
+    const lines = text.split(/\r?\n/);
+    if (!lines.length) return rows;
+    const header = lines[0].split(',');
+    for (let i = 1; i < lines.length; i++) {
+        if (!lines[i].trim()) continue;
+        const cells = lines[i].split(',');
+        if (cells.length < header.length) continue;
+        const o = {};
+        header.forEach((h, idx) => { o[h.trim()] = cells[idx].trim(); });
+        rows.push(o);
+    }
+    return rows;
+}
+
+async function loadWeatherData() {
+    if (!currentTown) return;
+    const town = currentTown;
+    // 实况 CSV（全量约2-3MB，缓存 v2：带版本号防旧缓存）
+    let cache = localStorage.getItem('wb_weather_cache_v2');
+    let csvText = null;
+    if (cache) {
+        try {
+            const c = JSON.parse(cache);
+            if (c.ts && Date.now() - c.ts < 6 * 3600 * 1000 && c.text) csvText = c.text;
+        } catch (e) {}
+    }
+    if (!csvText) {
+        const r = await fetch(WEATHER_REPO);
+        if (!r.ok) throw new Error('实况数据 HTTP ' + r.status);
+        csvText = await r.text();
+        try { localStorage.setItem('wb_weather_cache_v2', JSON.stringify({ ts: Date.now(), text: csvText })); } catch (e) {}
+    }
+    const rows = parseCSV(csvText);
+    // 按县过滤（名称精确匹配；失败时尝试包含匹配兜底）
+    const name = town.name;
+    let townRows = rows.filter(r => r.name === name);
+    if (!townRows.length) {
+        townRows = rows.filter(r => r.name && r.name.indexOf(name) >= 0);
+        if (townRows.length) console.warn('县名包含匹配命中:', name);
+    }
+    if (!townRows.length) {
+        console.warn('未找到县市实况数据:', name, 'CSV总行数:', rows.length, 'CSV县名样例:', rows.slice(0,3).map(r=>r.name));
+    }
+    // 预报
+    let forecast = [];
+    try {
+        const fr = await fetch(FORECAST_REPO);
+        if (fr.ok) {
+            const fjson = await fr.json();
+            const key = String(town.id);
+            forecast = (fjson[key] || []).map(d => ({
+                date: d.date,
+                tmin: d.temp_min, tmax: d.temp_max,
+                rain: d.precipitation_total != null ? d.precipitation_total : (d.rain || 0),
+                humidity: d.humidity, wind: d.wind_speed, gust: d.wind_gust,
+                pop: d.pop, desc: d.weather_desc, src: '预报'
+            }));
+        }
+    } catch (e) {}
+    // 合并为统一日序（过滤采集失败的空温度行）
+    const days = townRows.map(r => ({
+        date: r.date, tmin: parseFloat(r.temp_min), tmax: parseFloat(r.temp_max),
+        rain: parseFloat(r.precipitation_total) || 0, src: '实况'
+    })).filter(d => Number.isFinite(d.tmin) && Number.isFinite(d.tmax));
+    days.sort((a, b) => a.date < b.date ? -1 : 1);
+    // 去重：预报日期若已存在于实况则跳过（实况为准）
+    const existDates = new Set(days.map(d => d.date));
+    forecast.forEach(f => { if (!existDates.has(f.date)) days.push(f); });
+    days.sort((a, b) => a.date < b.date ? -1 : 1);
+    // 计算 Tavg / 有效积温(生长) / 活动积温(区划) / ET0（NaN 防护）
+    const lat = town.lat;
+    days.forEach(d => {
+        d.tavg = (Number.isFinite(d.tmin) && Number.isFinite(d.tmax)) ? (d.tmin + d.tmax) / 2 : null;
+        // 有效积温（生长预测）：日均温≥10℃ 时累加 (Tavg-10)
+        d.gdd = Number.isFinite(d.tavg) ? (d.tavg >= 10 ? Math.max(0, d.tavg - 10) : 0) : 0;
+        // 活动积温（区划展示）：日均温≥10℃ 时累加 Tavg 本身（与审定公告口径一致）
+        d.gddActive = Number.isFinite(d.tavg) ? (d.tavg >= 10 ? d.tavg : 0) : 0;
+        d.et0 = hargreaves(d.tmin, d.tmax, lat, d.date);
+    });
+    weatherData = { town: town, days: days };
+    calcStablePass();
+    calcEmergence();
+    return weatherData;
+}
+
+/* 五日滑动平均法：判定日均温稳定通过 10℃ 的起始日（春季回暖）
+   从序列首日起，取当天及后4天共5天，若5日均温均值≥10℃ 即判定稳定通过，
+   该窗口第一天为积温起始日；起始日前不计积温（滤掉倒春寒假回暖） */
+function calcStablePass() {
+    stablePassInfo = null;
+    if (!weatherData || !weatherData.days.length) return null;
+    const ds = weatherData.days;
+    for (let i = 0; i <= ds.length - STABLE_WIN; i++) {
+        let sum = 0, valid = 0;
+        for (let j = 0; j < STABLE_WIN; j++) {
+            if (Number.isFinite(ds[i + j].tavg)) { sum += ds[i + j].tavg; valid++; }
+        }
+        if (valid === STABLE_WIN && sum / STABLE_WIN >= STABLE_T0) {
+            stablePassInfo = { date: ds[i].date };
+            return stablePassInfo;
+        }
+    }
+    return null;
+}
+
+/* 生育期积温起始日：取 稳定通过日 与 播种日 中较晚者（稳定通过前不计积温） */
+function gddStartDate() {
+    const sd = document.getElementById('sowDate').value;
+    const sow = sd ? new Date(sd) : null;
+    const sp = stablePassInfo ? new Date(stablePassInfo.date) : null;
+    if (sp && (!sow || sp > sow)) return sp;
+    return sow;
+}
+
+/* 出苗判定：从积温起始日累计【活动积温】（出苗靠热量启动），达 EMERGENCE_GDD 即视为露土出苗 */
+function calcEmergence() {
+    emergInfo = null;
+    const start = gddStartDate();
+    if (!start || !weatherData) return null;
+    let acc = 0;
+    for (const d of weatherData.days) {
+        const dd = new Date(d.date);
+        if (dd < start) continue;   // 起始日前不计
+        acc += d.gddActive;         // 活动积温口径（与出苗阈值匹配）
+        if (acc >= EMERGENCE_GDD) {
+            emergInfo = { date: d.date, gddBefore: acc };
+            return emergInfo;
+        }
+    }
+    // 数据窗口内未达到出苗阈值（预报窗口不足/刚播种）
+    return null;
+}
+
+/* 生育期起算日：优先出苗日，未判定则回退积温起始日 */
+function growthBaseDate() {
+    if (emergInfo && emergInfo.date) return new Date(emergInfo.date);
+    return gddStartDate();
+}
+
+/* Hargreaves ET₀ (mm/day): 0.0023 × Ra × (Tavg+17.8) × √(Tmax−Tmin) */
+function hargreaves(tmin, tmax, lat, dateStr) {
+    if (!Number.isFinite(tmin) || !Number.isFinite(tmax)) return null;
+    const tavg = (tmin + tmax) / 2;
+    const d = dateStr ? new Date(dateStr) : new Date();
+    const doy = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);
+    const phi = lat * Math.PI / 180;
+    const decl = 0.409 * Math.sin(2 * Math.PI / 365 * doy - 1.39);
+    const ws = Math.acos(Math.min(1, Math.max(-1, -Math.tan(phi) * Math.tan(decl))));
+    const dr = 1 + 0.033 * Math.cos(2 * Math.PI / 365 * doy);
+    const ra = 24 * 60 / Math.PI * 0.0820 * dr * (ws * Math.sin(phi) * Math.sin(decl) + Math.cos(phi) * Math.cos(decl) * Math.sin(ws));
+    const et0 = 0.0023 * ra * (tavg + 17.8) * Math.sqrt(Math.max(0.1, tmax - tmin));
+    return Math.round(et0 * 100) / 100;
+}
+
+function getStageKc(dateStr) {
+    // 由生育期起算日（出苗日优先）+ STAGES 比例推算当前 Kc
+    const sd = document.getElementById('sowDate').value;
+    if (!sd) return null;
+    const total = getTotalDays();
+    const base = growthBaseDate();
+    if (!base) return null;
+    const t = new Date(dateStr);
+    const doy = Math.floor((t - base) / 86400000);
+    if (doy < 0) return 0;
+    const frac = doy / total;
+    for (const st of STAGES) {
+        if (frac >= st.start && frac <= st.end) return st.kc;
+    }
+    return frac > 1 ? STAGES[STAGES.length - 1].kc : null;
+}
+
+/* ================= 品种匹配（审定库） ================= */
+let varietyMatched = null;   // 当前匹配到的品种记录（用于来源标注）
+
+function ensureVarietyDB() {
+    if (varietyDB) return Promise.resolve(varietyDB);
+    return fetch(VARIETY_REPO)
+        .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(data => {
+            varietyDB = data.filter(v => v.judgementNo);
+            // 预计算类型标签（普通/鲜食/青贮/爆裂），供审定页辅助检索 O(1) 过滤
+            varietyDB.forEach(v => { if (!v._gtype) v._gtype = classifyGrainTypeForCert(v); });
+            // 填充 datalist（品种名 + 审定编号）
+            const dl = document.getElementById('varietyList');
+            const opts = new Set();
+            varietyDB.forEach(v => {
+                if (v.varietyName) opts.add(v.varietyName);
+                if (v.judgementNo) opts.add(v.judgementNo);
+            });
+            dl.innerHTML = Array.from(opts).slice(0, 3000).map(o => '<option value="' + o + '">').join('');
+            // 审定页 datalist 与总数
+            const cdl = document.getElementById('certVarietyList');
+            if (cdl) cdl.innerHTML = dl.innerHTML;
+            const cnt = document.getElementById('certTotalCount');
+            if (cnt) cnt.textContent = varietyDB.length;
+            return varietyDB;
+        })
+        .catch(e => { console.warn('品种库加载失败', e); return []; });
+}
+
+/* 加载 2025 理想热年标准曲线（219县市）；失败回退本地内嵌兜底（无则跳过，理论轨退回天数比例） */
+function ensureStandard2025() {
+    if (standard2025) return Promise.resolve(standard2025);
+    return fetch(STANDARD2025_REPO)
+        .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(data => {
+            standard2025 = data;
+            standardLoaded = true;
+            console.log('2025标准曲线加载完成:', Object.keys(data).length, '县市');
+            return standard2025;
+        })
+        .catch(e => { console.warn('2025标准曲线加载失败（理论轨退回天数比例）', e); return null; });
+}
+
+/* 取某县市的 2025 标准数据；找不到返回 null */
+function getStandard(townName) {
+    if (!standard2025 || !townName) return null;
+    return standard2025[townName] || null;
+}
+
+/* 模糊查询候选：以品种名称为主，输入≥5位才检索审定编号。
+   排序三键：中文品种名优先(代号型垫底) → 审定年份降序(新→旧) → 相关性打分；
+   命中 ≤100 全量显示（超阈值截断并标注总数）。返回值挂 .total = 真实去重命中数 */
+function searchVarieties(q) {
+    if (!q || !varietyDB) return [];
+    q = q.trim().toLowerCase();
+    if (q.length < 2) return [];
+    // 品种名：始终检索（主）
+    const nameHits = varietyDB.filter(v =>
+        v.varietyName && v.varietyName.toLowerCase().includes(q));
+    // 审定编号：仅当输入≥5位时检索（次）
+    const noHits = q.length >= 5
+        ? varietyDB.filter(v => v.judgementNo && v.judgementNo.toLowerCase().includes(q))
+        : [];
+    // 合并去重（同名多审定记录保留第一个），同时计算相关性打分
+    const seen = new Set();
+    const scored = [];
+    for (const v of nameHits.concat(noHits)) {
+        const key = v.varietyName;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const name = (v.varietyName || '').toLowerCase();
+        const idx = name.indexOf(q);
+        const cn = /[\u4e00-\u9fa5]/.test(v.varietyName);
+        let s = 0;
+        if (name === q) s += 200;              // 完全匹配
+        else if (idx === 0) s += 150;          // 前缀命中
+        if (name.endsWith(q)) s += 30;         // 名称以查询串结尾优先（如 XX201）
+        s += 60 - Math.min(idx, 60);           // 匹配位置靠前优先
+        if (cn) s += 80;                       // 中文品种名加分（与首键一致）
+        s += Math.max(0, 30 - v.varietyName.length);  // 短名称优先
+        const yr = parseInt(v.year, 10) || 0;  // 审定年份（缺失按0排最后）
+        scored.push({ v, s, cn, yr });
+    }
+    // 三键排序：中文名优先 → 年份降序（新→旧） → 相关性打分降序
+    scored.sort((a, b) => (b.cn - a.cn) || (b.yr - a.yr) || (b.s - a.s));
+    const total = scored.length;
+    const out = scored.slice(0, Math.min(100, total)).map(x => x.v);
+    out.total = total;   // 真实去重命中总数（供候选列表提示用）
+    return out;
+}
+
+function onVarietyInput(val) {
+    const box = document.getElementById('varietyCandidates');
+    const hits = searchVarieties(val);
+    if (!hits.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+    box.classList.remove('hidden');
+    box.innerHTML = hits.map((v, i) =>
+        '<div class="px-2 py-1.5 text-xs cursor-pointer hover:bg-yellow-100 border-b border-gray-100 flex justify-between items-center" ' +
+        'onclick="pickVariety(' + i + ')" data-vidx="' + i + '">' +
+        '<span class="font-bold text-yellow-800">' + v.varietyName + '</span>' +
+        '<span class="text-gray-500 text-sm">' + (v.year || '—') + '年 · ' + (v.judgementNo || '') + ' · ' + (v.region || '') + (v.growthDays ? ' · ' + v.growthDays + '天' : '') + '</span></div>'
+    ).join('') +
+    '<div class="px-2 py-1 text-sm text-gray-400">' +
+    (hits.total > hits.length ? '共 ' + hits.total + ' 条候选（仅显示前 ' + hits.length + '，继续输入可精确匹配）' : '共 ' + hits.length + ' 条候选，点击选择') +
+    '</div>';
+    box._hits = hits;
+}
+
+function pickVariety(idx) {
+    const box = document.getElementById('varietyCandidates');
+    const hits = box._hits || [];
+    if (!hits[idx]) return;
+    applyVariety(hits[idx]);
+    box.classList.add('hidden');
+    document.getElementById('varietyNameInput').value = hits[idx].varietyName;
+}
+
+function matchVariety() {
+    const name = (document.getElementById('varietyNameInput').value || '').trim();
+    const box = document.getElementById('varietyMatchResult');
+    if (!name) { box.textContent = '请输入品种名或审定编号'; return; }
+    ensureVarietyDB().then(db => {
+        // 先精确匹配，再模糊
+        let hits = db.filter(v => v.varietyName === name || v.judgementNo === name);
+        if (!hits.length) hits = searchVarieties(name);
+        if (!hits.length) {
+            box.innerHTML = '<span class="text-red-600">未找到「' + name + '」的审定记录（或数据尚未抓取完成）。可手动填写生育期天数。</span>';
+            return;
+        }
+        if (hits.length > 1) {
+            const cbox = document.getElementById('varietyCandidates');
+            cbox._hits = hits;
+            cbox.innerHTML = hits.map((v, i) =>
+                '<div class="px-2 py-1.5 text-xs cursor-pointer hover:bg-yellow-100 border-b border-gray-100 flex justify-between items-center" onclick="pickVariety(' + i + ')">' +
+                '<span class="font-bold text-yellow-800">' + v.varietyName + '</span>' +
+                '<span class="text-gray-500 text-sm">' + (v.judgementNo || '') + ' · ' + (v.region || '') + (v.growthDays ? ' · ' + v.growthDays + '天' : '') + '</span></div>'
+            ).join('');
+            cbox.classList.remove('hidden');
+            box.innerHTML = '<span class="text-yellow-700">找到 ' + hits.length + ' 条候选，请点选。</span>';
+            return;
+        }
+        applyVariety(hits[0]);
+    });
+}
+
+function applyVariety(v) {
+    // growthDays 可能缺失（约2.4%品种公告未写成熟期）→ 保留当前自定义值
+    const gd = (v.growthDays != null && v.growthDays > 0) ? v.growthDays : safeNum(document.getElementById('customDays').value, 115);
+    document.getElementById('customDays').value = gd;
+    const gddInput = document.getElementById('customGdd');
+    const tag = document.getElementById('gddSourceTag');
+    if (v.gdd) {
+        gddInput.value = v.gdd;
+        tag.textContent = '（公告）';
+        tag.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap bg-green-100 text-green-700';
+    } else {
+        const est = Math.round(gd * 20);
+        gddInput.value = est;
+        tag.textContent = '（估算）';
+        tag.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap bg-amber-100 text-amber-700';
+    }
+    varietyMatched = v;
+    const effGDD = Math.max(0, (v.gdd || (gd * 20)) - 10 * gd);
+    const box = document.getElementById('varietyMatchResult');
+    box.innerHTML = '✅ 已从 <b>' + (v.judgementNo || v.varietyName) + '</b> 填入：生育期 ' + gd + ' 天' +
+        (v.gdd ? '，活动积温 ' + v.gdd + '℃·d（公告·区划）' : '，活动积温按天数估算 ' + Math.round(gd * 20) + '℃·d（估算）') +
+        ' → 有效积温预算约 ' + effGDD + '℃·d（生长预测）' +
+        '<br><span class="text-gray-500">审定地区：' + (v.region || '—') + '</span>';
+    document.getElementById('varietyNameInput').value = v.varietyName;
+    document.getElementById('varietyCandidates').classList.add('hidden');
+    // 栽培要点原文 → 第一页右侧（播种参数计算器下方、双轨对比上方）
+    const prBox = document.getElementById('plantReqBox');
+    const prText = document.getElementById('plantReqText');
+    if (prBox && prText) {
+        prText.textContent = v.plantRequirment || '（该品种公告未提供栽培技术要点）';
+        prBox.classList.remove('hidden');
+    }
+    renderAnnounceCtrl(v);
+    updateCropProfile();
+    // 双向联动：同步审定页
+    syncCertificationToVariety(v);
+}
+
+/* 公告标准对照组（只读，固定显示公告解析值；仅保留品种库真实有的字段） */
+function renderAnnounceCtrl(v) {
+    const box = document.getElementById('announceCtrlBox');
+    if (!v) { box.classList.add('hidden'); return; }
+    document.getElementById('announceCtrlNo').textContent = v.judgementNo || '';
+    document.getElementById('ctrlDensity').textContent = v.densityMu ? v.densityMu + ' 株' : '—';
+    document.getElementById('ctrlAvgYield').textContent = v.avgYieldMu ? v.avgYieldMu + ' kg' : '—';
+    box.classList.remove('hidden');
+}
+
+/* 手动改生育期时清除匹配状态（避免标注误导） */
+function clearVarietyTag() {
+    varietyMatched = null;
+    const tag = document.getElementById('gddSourceTag');
+    const gddInput = document.getElementById('customGdd');
+    // 仅当积温为空时补估算标注；若已有值保持
+    if (!gddInput.value) {
+        tag.textContent = '（估算）';
+        tag.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap bg-amber-100 text-amber-700';
+    }
+}
+
+function manualCustomChange() {
+    clearVarietyTag();
+    updateCropProfile();
+}
+
+function manualGddChange() {
+    varietyMatched = null;
+    const tag = document.getElementById('gddSourceTag');
+    const gddInput = document.getElementById('customGdd');
+    if (gddInput.value) {
+        tag.textContent = '（手动）';
+        tag.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap bg-gray-200 text-gray-600';
+    } else {
+        tag.textContent = '（估算）';
+        tag.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap bg-amber-100 text-amber-700';
+    }
+    updateCropProfile();
+}
+
+/* ================= 审定信息页签（第5页） ================= */
+/* 与「种植技术」页品种框双向联动：
+   - 种植技术页 applyVariety(v) 时调用 syncCertificationToVariety(v) → 审定页显示该品种
+   - 审定页 pickCertVariety(v) 时调用 applyVariety(v)（但跳过回写，避免死循环） */
+
+let certApplying = false;   // 防止双向同步死循环
+
+function classifyGrainTypeForCert(v) {
+    const t = ' ' + (v.varietyCharacter || '') + ' ' + (v.judgementSuggestion || '') + ' ' + (v.outputExpression || '') + ' ';
+    if (t.indexOf('爆裂') >= 0) return '爆裂';
+    if (t.indexOf('青贮') >= 0) return '青贮';
+    if (t.indexOf('鲜食') >= 0 || t.indexOf('甜玉米') >= 0 || t.indexOf('糯玉米') >= 0) return '鲜食';
+    return '普通';
+}
+
+function fillCertDetail(v) {
+    if (!v) return;
+    const gtype = classifyGrainTypeForCert(v);
+    document.getElementById('certName').textContent = v.varietyName || '—';
+    document.getElementById('certTypeBadge').textContent = gtype;
+    document.getElementById('certTypeBadge').className =
+        'text-sm font-bold px-2 py-0.5 rounded-full ' +
+        (gtype === '鲜食' ? 'bg-pink-600 text-white' : gtype === '青贮' ? 'bg-lime-600 text-white' : gtype === '爆裂' ? 'bg-orange-600 text-white' : 'bg-indigo-600 text-white');
+    const isTrans = v.transgenosis === '是';
+    document.getElementById('certTransBadge').textContent = isTrans ? '转基因' : '非转基因';
+    document.getElementById('certTransBadge').className = 'text-sm font-bold px-2 py-0.5 rounded-full ' +
+        (isTrans ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700');
+    document.getElementById('certJudgementNo').textContent = v.judgementNo || '—';
+    document.getElementById('certYear').textContent = v.year || '—';
+    document.getElementById('certRegion').textContent = v.region || '—';
+    document.getElementById('certAnnounceNo').textContent = v.announcementNo || '—';
+    document.getElementById('certSource').textContent = v.varietySource || '—';
+    document.getElementById('certApplyCompany').textContent = v.applyCompany || '—';
+    document.getElementById('certBreedingCompany').textContent = v.breedingCompany || '—';
+    document.getElementById('certGrowthDays').textContent = v.growthDays != null ? v.growthDays : '—';
+    document.getElementById('certGdd').textContent = v.gdd != null ? v.gdd : '—';
+    document.getElementById('certAvgYield').textContent = v.avgYieldMu != null ? v.avgYieldMu : '—';
+    document.getElementById('certDensity').textContent = v.densityMu != null ? v.densityMu : '—';
+    document.getElementById('certFertility').textContent = v.fertilityLevel || '—';
+    document.getElementById('certCharacter').textContent = v.varietyCharacter || '（未提供）';
+    document.getElementById('certOutput').textContent = v.outputExpression || '（未提供）';
+    document.getElementById('certPlantReq').textContent = v.plantRequirment || '（未提供）';
+    document.getElementById('certSuggestion').textContent = v.judgementSuggestion || '（未提供）';
+    document.getElementById('certDetailBox').classList.remove('hidden');
+}
+
+/* ===== 审定页级联辅助检索 =====
+   第一级：关键词模糊检索 → 候选集；之后每个辅助条件（年份/类型/转基因/单位）基于当前候选集逐级过滤，
+   选项值从当前结果提取（级联收缩），先选哪个哪个就是下一级；多条件为 AND 组合 */
+const CERT_FILTER_IDS = ['certFilterYear', 'certFilterType', 'certFilterTrans', 'certFilterCompany'];
+const CERT_FILTER_KEY = { certFilterYear: 'year', certFilterType: 'type', certFilterTrans: 'trans', certFilterCompany: 'company' };
+let certFilters = { year: '', type: '', trans: '', company: '' };   // 当前辅助过滤条件
+
+function getCertFilters() {
+    const f = {};
+    CERT_FILTER_IDS.forEach(id => { f[CERT_FILTER_KEY[id]] = document.getElementById(id).value; });
+    return f;
+}
+
+/* 应用辅助条件过滤候选集（多条件 AND；transgenosis 缺失按非转基因计） */
+function applyCertFilters(hits) {
+    const f = certFilters;
+    return hits.filter(v =>
+        (!f.year || String(v.year) === f.year) &&
+        (!f.type || (v._gtype || classifyGrainTypeForCert(v)) === f.type) &&
+        (!f.trans || ((v.transgenosis === '是') ? '是' : '否') === f.trans) &&
+        (!f.company || (v.applyCompany || '').indexOf(f.company) >= 0)
+    );
+}
+
+/* 从当前结果集提取各辅助条件可选值（级联收缩）；选中值失效则自动重置为「全部」；返回是否发生重置 */
+function updateCertFilterOptions(pool) {
+    const years = [...new Set(pool.map(v => String(v.year)).filter(Boolean))]
+        .sort((a, b) => parseInt(b, 10) - parseInt(a, 10));
+    const companies = [...new Set(pool.map(v => v.applyCompany).filter(Boolean))].sort();
+    const types = ['普通', '鲜食', '青贮', '爆裂'].filter(t =>
+        pool.some(v => (v._gtype || classifyGrainTypeForCert(v)) === t));
+    const trans = (pool.some(v => v.transgenosis === '是') ? ['是'] : [])
+        .concat(pool.some(v => v.transgenosis !== '是') ? ['否'] : []);
+    const defs = [
+        ['certFilterYear',    '审定年份·全部', years.map(y => '<option value="' + y + '">' + y + ' 年</option>').join(''),    String(certFilters.year), years],
+        ['certFilterType',    '类型·全部',     types.map(t => '<option value="' + t + '">' + t + '</option>').join(''),      certFilters.type, types],
+        ['certFilterTrans',   '转基因·全部',   trans.map(t => '<option value="' + t + '">' + (t === '是' ? '转基因' : '非转基因') + '</option>').join(''), certFilters.trans, trans],
+        ['certFilterCompany', '申报单位·全部', companies.map(c => '<option value="' + c + '">' + c + '</option>').join(''), certFilters.company, companies]
+    ];
+    let changed = false;
+    for (const [id, label, opts, cur, valid] of defs) {
+        const el = document.getElementById(id);
+        const ok = valid.indexOf(cur) >= 0;
+        if (cur && !ok) { certFilters[CERT_FILTER_KEY[id]] = ''; changed = true; }
+        el.innerHTML = '<option value="">' + label + '</option>' + opts;
+        el.value = ok ? cur : '';
+    }
+    return changed;
+}
+
+function showCertList(box, hits, kwTotal) {
+    if (!hits.length) {
+        box.classList.add('hidden'); box.innerHTML = '';
+        if (kwTotal > 0) {
+            const r = document.getElementById('certMatchResult');
+            if (r) r.innerHTML = '<span class="text-amber-600">关键词命中 ' + kwTotal + ' 条，当前筛选条件下无匹配，可清空筛选。</span>';
+        }
+        return;
+    }
+    box.classList.remove('hidden');
+    const tail = (hits.length >= 100 && kwTotal > hits.length)
+        ? '共 ' + kwTotal + ' 条候选（仅显示前 100，继续输入可精确匹配）'
+        : '共 ' + hits.length + ' 条候选，点击选择';
+    box.innerHTML = hits.map((v, i) =>
+        '<div class="px-2 py-1.5 text-xs cursor-pointer hover:bg-indigo-100 border-b border-gray-100 flex justify-between items-center" ' +
+        'onclick="pickCertVariety(' + i + ')" data-vidx="' + i + '">' +
+        '<span class="font-bold text-indigo-800">' + v.varietyName + '</span>' +
+        '<span class="text-gray-500 text-sm">' + (v.year || '—') + '年 · ' + (v.judgementNo || '') + ' · ' + (v.region || '') + (v.growthDays ? ' · ' + v.growthDays + '天' : '') + '</span></div>'
+    ).join('') +
+    '<div class="px-2 py-1 text-sm text-gray-400">' + tail + '</div>';
+    box._hits = hits;
+}
+
+function renderCertCandidates(val) {
+    const box = document.getElementById('certVarietyCandidates');
+    const base = searchVarieties(val);            // 第一级：关键词
+    const kwTotal = base.total || base.length;
+    let filtered = applyCertFilters(base);        // 辅助条件过滤
+    // 级联选项域基于当前过滤结果；若有选中值失效被重置，用重置后的条件重算一次
+    if (updateCertFilterOptions(filtered)) {
+        certFilters = getCertFilters();
+        filtered = applyCertFilters(base);
+        updateCertFilterOptions(filtered);
+    }
+    showCertList(box, filtered, kwTotal);
+}
+
+function onCertVarietyInput(val) {
+    resetCertFilters(true);                       // 关键词变化：重置辅助条件（避免旧条件套新候选）
+    renderCertCandidates(val);
+}
+
+function onCertFilterChange() {
+    certFilters = getCertFilters();
+    renderCertCandidates(document.getElementById('certVarietyInput').value);
+}
+
+function resetCertFilters(silent) {
+    CERT_FILTER_IDS.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    certFilters = { year: '', type: '', trans: '', company: '' };
+    if (!silent) renderCertCandidates(document.getElementById('certVarietyInput').value);
+}
+
+function pickCertVariety(idx) {
+    const box = document.getElementById('certVarietyCandidates');
+    const hits = box._hits || [];
+    if (!hits[idx]) return;
+    const v = hits[idx];
+    box.classList.add('hidden');
+    document.getElementById('certVarietyInput').value = v.varietyName;
+    document.getElementById('certMatchResult').innerHTML = '<span class="text-indigo-600">已选中：' + v.varietyName + '（' + (v.judgementNo || '') + '）</span>';
+    fillCertDetail(v);
+    // 双向联动：在种植技术页应用该品种（参数 + 第一页输入框同步）
+    certApplying = true;
+    applyVariety(v);
+    certApplying = false;
+}
+
+function matchCertVariety() {
+    const name = (document.getElementById('certVarietyInput').value || '').trim();
+    const box = document.getElementById('certMatchResult');
+    if (!name) { box.textContent = '请输入品种名或审定编号'; return; }
+    ensureVarietyDB().then(db => {
+        let hits = db.filter(v => v.varietyName === name || v.judgementNo === name);
+        if (!hits.length) hits = searchVarieties(name);
+        if (!hits.length) {
+            box.innerHTML = '<span class="text-red-600">未找到「' + name + '」的审定记录。可检查输入或等待品种库更新。</span>';
+            return;
+        }
+        if (hits.length === 1) {
+            const v = hits[0];
+            document.getElementById('certVarietyInput').value = v.varietyName;
+            document.getElementById('certMatchResult').innerHTML = '<span class="text-indigo-600">已选中：' + v.varietyName + '（' + (v.judgementNo || '') + '）</span>';
+            fillCertDetail(v);
+            // 双向联动：在种植技术页应用该品种
+            certApplying = true;
+            applyVariety(v);
+            certApplying = false;
+            return;
+        }
+        // 多条候选
+        const cbox = document.getElementById('certVarietyCandidates');
+        cbox._hits = hits;
+        cbox.innerHTML = hits.map((v, i) =>
+            '<div class="px-2 py-1.5 text-xs cursor-pointer hover:bg-indigo-100 border-b border-gray-100 flex justify-between items-center" onclick="pickCertVariety(' + i + ')">' +
+            '<span class="font-bold text-indigo-800">' + v.varietyName + '</span>' +
+            '<span class="text-gray-500 text-sm">' + (v.judgementNo || '') + ' · ' + (v.region || '') + (v.growthDays ? ' · ' + v.growthDays + '天' : '') + '</span></div>'
+        ).join('');
+        cbox.classList.remove('hidden');
+        box.innerHTML = '<span class="text-indigo-600">找到 ' + hits.length + ' 条候选，请点选。</span>';
+    });
+}
+
+/* 种植技术页选中品种 → 同步审定页（展示完整信息，不回写种植技术页避免死循环） */
+function syncCertificationToVariety(v) {
+    if (!v) return;
+    if (certApplying) return;   // 由审定页发起时跳过，防止死循环
+    const input = document.getElementById('certVarietyInput');
+    if (input) input.value = v.varietyName;
+    const result = document.getElementById('certMatchResult');
+    if (result) result.innerHTML = '<span class="text-indigo-600">已同步：' + v.varietyName + '（' + (v.judgementNo || '') + '）</span>';
+    fillCertDetail(v);
+}
+
+/* ================= 双轨生育期对比 ================= */
+function getCurrentStageByDate(dateStr) {
+    const sd = document.getElementById('sowDate').value;
+    if (!sd) return null;
+    const total = getTotalDays();
+    const base = growthBaseDate();
+    if (!base) return null;
+    const t = new Date(dateStr);
+    const doy = Math.floor((t - base) / 86400000);
+    if (doy < 0) return null;
+    const frac = doy / total;
+    for (let i = 0; i < STAGES.length; i++) {
+        if (frac >= STAGES[i].start && frac <= STAGES[i].end) return { idx: i, frac: frac };
+    }
+    return null;
+}
+
+function renderDualTrack() {
+    const sd = document.getElementById('sowDate').value;
+    const status = document.getElementById('dualTrackStatus');
+    if (!sd) { status.textContent = '请先设置播种日期'; return; }
+    if (!currentTown || !weatherData || weatherData.town.id !== currentTown.id) {
+        status.textContent = '请选择种植区域以获取实况积温';
+        return;
+    }
+    calcEmergence();   // 每次重算出苗日（播种日期变更后自动生效）
+    status.textContent = currentTown.name + ' · 实况+预报数据';
+    const total = getTotalDays();
+    const targetGDD = getTotalGDD();   // 有效积温预算（生长预测口径）
+    const s = new Date(sd);
+    const base = growthBaseDate();       // 生育期起算日（出苗日优先）
+    const gs = gddStartDate();
+    const emergLabel = (emergInfo && emergInfo.date)
+        ? '出苗日 ' + emergInfo.date.slice(5) + '（活动积温 ' + Math.round(emergInfo.gddBefore) + '℃·d 达出苗阈值' + EMERGENCE_GDD + '）'
+        : '未达出苗阈值，按 ' + (gs ? gs.toISOString().slice(0,10) : '稳定通过/播种') + ' 起算';
+    const today = new Date(); today.setHours(0,0,0,0);
+
+    // 2025 标准曲线（理想热年）：理论轨基准
+    const std = getStandard(currentTown.name);
+    const hasStd = !!std;
+    // 理论轨有效积温总预算：有标准→用 2025 实际有效积温总量；无标准→公告换算
+    const effBudget = hasStd ? std.effTotal : targetGDD;
+
+    // 理论轨（有 2025 标准曲线时用其各阶段实际到达日，否则回退天数比例）
+    const thBar = document.getElementById('dualBarTheory');
+    const thLab = document.getElementById('dualLabelsTheory');
+    thBar.innerHTML = ''; thLab.innerHTML = '';
+    const colors = ['#16a34a', '#22c55e', '#65a30d', '#ca8a04', '#ea580c', '#dc2626', '#7c3aed'];
+    const theoDateOf = (st) => {
+        if (hasStd && std.stageDays) {
+            // 标准曲线阶段到达日（sowing=播种日，其余取 2025 实际到达日，映射到今年月日）
+            if (st.key === 'sowing') return new Date(sd);
+            const d = std.stageDays[st.key];
+            if (d) {
+                // 2025 基准日期 → 今年同月日（保证与实际轨同一年，偏差计算正确）
+                const curYear = sd.slice(0, 4);
+                return new Date(curYear + '-' + d.slice(5));
+            }
+        }
+        // 回退：出苗日起按天数比例
+        return addDays(base, Math.round(st.end * total));
+    };
+    STAGES.forEach((st, i) => {
+        const seg = document.createElement('div');
+        seg.className = 'flex-1 cal-seg';
+        seg.title = st.name + '（理论·' + (hasStd ? '2025标准' : '天数比例') + '）';
+        seg.innerHTML = '<div class="cal-seg-bar" style="background:' + colors[i] + '"></div>';
+        thBar.appendChild(seg);
+        const sDate = (i === 0) ? new Date(sd) : theoDateOf(STAGES[i - 1]);
+        const eDate = theoDateOf(st);
+        const lb = document.createElement('div');
+        lb.className = 'flex-1 text-left md:text-center leading-tight';
+        lb.innerHTML = '<span class="font-bold text-gray-700">' + st.name + '</span><br><span class="text-gray-500">' + fmtDate(sDate) + '~' + fmtDate(eDate) + '</span>';
+        thLab.appendChild(lb);    });
+
+    // 实际轨（GDD 驱动）
+    const acBar = document.getElementById('dualBarActual');
+    const acLab = document.getElementById('dualLabelsActual');
+    acBar.innerHTML = ''; acLab.innerHTML = '';
+    // 计算实际累计 GDD（有效积温，从出苗日起独立累加，不再混减活动积温）
+    const emDate = emergInfo ? emergInfo.date : null;
+    let cumGDD = 0;
+    const dayData = [];
+    weatherData.days.forEach(d => {
+        if (emDate && d.date < emDate) return;   // 出苗日前不计
+        cumGDD += d.gdd;                          // 有效积温口径
+        dayData.push({ date: d.date, cum: cumGDD, src: d.src });
+    });
+    // 各阶段理论 GDD 区间：有标准曲线→用 2025 实际有效积温阈值；无→按比例分配目标积温
+    const stageGDD = STAGES.map((st, i) => {
+        if (hasStd) {
+            // 标准曲线：阶段末有效积温 = effTotal × (end-0.08)/(1-0.08)（sowing 段为 0，即播种-出苗无有效积温）
+            const frac = st.key === 'sowing' ? 0 : (st.end - 0.08) / (1 - 0.08);
+            return { start: i === 0 ? 0 : null, end: effBudget * frac };
+        }
+        return { start: effBudget * st.start, end: effBudget * st.end };
+    });
+    // 修正 start（标准曲线下用上一段 end）
+    if (hasStd) {
+        let prev = 0;
+        stageGDD.forEach((sg, i) => {
+            if (i === 0) { sg.start = 0; prev = sg.end; }
+            else { sg.start = prev; prev = sg.end; }
+        });
+    }
+    // 找出实际到达各阶段结束点的日期
+    const actualReach = STAGES.map((st, i) => {
+        const target = stageGDD[i].end;
+        let reached = null;
+        for (const dd of dayData) {
+            if (dd.cum >= target) { reached = dd.date; break; }
+        }
+        return reached;
+    });
+    const nowCum = dayData.length ? dayData[dayData.length - 1].cum : 0;
+
+    STAGES.forEach((st, i) => {
+        const seg = document.createElement('div');
+        seg.className = 'flex-1 cal-seg';
+        const reached = actualReach[i];
+        const done = reached ? true : (nowCum > stageGDD[i].end);
+        const inProgress = !done && nowCum >= stageGDD[i].start;
+        const style = done ? 'background:' + colors[i]
+                     : inProgress ? 'background:' + colors[i] + ';opacity:0.75'
+                     : 'background:' + colors[i] + ';opacity:0.35';
+        seg.title = st.name + '（实际）';
+        seg.innerHTML = '<div class="cal-seg-bar" style="' + style + '"></div>';
+        acBar.appendChild(seg);
+        const lb = document.createElement('div');
+        lb.className = 'flex-1 text-left md:text-center leading-tight';
+        if (reached) {
+            const theoDate = theoDateOf(st);
+            const diff = Math.round((new Date(reached) - theoDate) / 86400000);
+            const cls = diff > 2 ? 'text-red-600' : (diff < -2 ? 'text-green-700' : 'text-gray-500');
+            lb.innerHTML = '<span class="font-bold text-gray-700">' + st.name + '</span><br><span class="' + cls + '">' + fmtDate(new Date(reached)) +
+                (diff > 2 ? ' 滞后' + diff + '天' : diff < -2 ? ' 提前' + (-diff) + '天' : ' 准时') + '</span>';
+        } else if (inProgress) {
+            lb.innerHTML = '<span class="font-bold text-gray-700">' + st.name + '</span><br><span class="text-amber-600">进行中 (' + Math.round(nowCum / effBudget * 100) + '%)</span>';
+        } else {
+            lb.innerHTML = '<span class="font-bold text-gray-700">' + st.name + '</span><br><span class="text-gray-400">待到达</span>';
+        }
+        acLab.appendChild(lb);
+    });
+
+    // GDD 进度（出苗后口径；「表面活动积温、里子有效积温」：实际有效积温 ÷ 换算率 = 活动积温）
+    status.textContent = currentTown.name + ' · ' + emergLabel + (hasStd ? '（基准: 2025理想年）' : '');
+    const ratio = hasStd ? std.ratio : 0.48;
+    const actShown = nowCum / ratio;                       // 实际有效积温 → 活动积温展示
+    const actBudget = hasStd ? std.actTotal : (targetGDD / 0.48);   // 理论活动积温预算
+    document.getElementById('gddActualNum').textContent = Math.round(actShown);
+    document.getElementById('gddTargetNum').textContent = Math.round(actBudget);
+    document.getElementById('gddActualBar').style.width = Math.min(100, actShown / actBudget * 100) + '%';
+    document.getElementById('gddTargetBar').style.width = '100%';
+    // 积温进度说明（口径标注）
+    const gddSum = document.getElementById('gddSummary');
+    if (gddSum) {
+        gddSum.innerHTML = (hasStd
+            ? '口径：有效积温(出苗起) ÷ 换算率' + std.ratio + ' = 活动积温（表面），与公告区划对比；里子用有效积温驱动。<br>'
+            : '口径：有效积温(出苗起)，目标按公告活动积温换算（默认换算率0.48）。<br>') +
+            '2025理想年：出苗 ' + (std ? std.emDate.slice(5) : '—') + '，全生育期活动积温约 ' + (std ? Math.round(std.actTotal) : '—') + '℃·d。';
+    }
+
+    // 偏差与措施
+    const devEl = document.getElementById('deviationSummary');
+    const current = getCurrentStageByDate(today.toISOString().slice(0, 10));
+    currentStageIdx = current ? current.idx : -1;
+    // 当前阶段变化后刷新植保图谱的"当前阶段"高亮
+    if (document.getElementById('protection-list').children.length) {
+        renderFullProtection(protectionFilter);
+    }
+    const latestSrc = dayData.length ? dayData[dayData.length - 1].src : '';
+    if (!current) {
+        devEl.textContent = '当前不在生育期内（播种前或已收获）。' + (emergLabel || '');
+        return;
+    }
+    const st = STAGES[current.idx];
+    const theoDate = theoDateOf(st);
+    let msg = '<b>当前阶段：' + st.name + '</b>（积温进度 ' + Math.round(actShown / actBudget * 100) + '%·活动积温口径）<br>';
+    const reachedDate = actualReach[current.idx];
+    if (reachedDate) {
+        const diff = Math.round((new Date(reachedDate) - theoDate) / 86400000);
+        if (diff > 2) {
+            msg += '⚠ 本阶段 <b class="text-red-600">滞后 ' + diff + ' 天</b>（相对2025理想年' + (hasStd ? '或理论' : '') + '）。积温不足风险：<br>• 叶面喷施磷酸二氢钾(0.3%)+芸苔素内酯促发育<br>• 酌情化控促早熟，减少氮肥延迟效应<br>• 关注早霜风险，成熟前适时早收/站秆晾晒';
+        } else if (diff < -2) {
+            msg += '✓ 本阶段 <b class="text-green-700">提前 ' + (-diff) + ' 天</b>（相对2025理想年' + (hasStd ? '或理论' : '') + '）。积温超前：<br>• 防后期脱肥早衰，及时追氮补水<br>• 提早准备收获机械，防过度成熟籽粒破损';
+        } else {
+            msg += '✓ 本阶段与' + (hasStd ? '2025理想年' : '理论') + '基本同步。按常规管理即可。';
+        }
+    } else if (latestSrc === '预报') {
+        const proj = Math.round(actShown / actBudget * 100);
+        msg += 'ℹ 处于预报窗口内，实际活动积温' + Math.round(actShown) + '℃·d，占' + (hasStd ? '2025理想年' : '理论') + '预算' + Math.round(actBudget) + '的 ' + proj + '%。' +
+            (proj < 85 ? '<br>• 若持续偏低，需促早熟措施（叶喷磷二+芸苔素）' : '');
+    } else {
+        msg += 'ℹ 当前阶段尚未完成，按标准农事管理。';
+    }
+    // 附加当前阶段标准措施
+    msg += '<br><span class="text-blue-600">标准措施：' + st.tip + '</span>';
+    devEl.innerHTML = msg;
+}
+/* ================= 气象逆境评估渲染 ================= */
+function weatherRefresh() {
+    const statusEl = document.getElementById('weatherStatusLine');
+    if (!currentTown) {
+        statusEl.innerHTML = '<span class="status-dot"></span> 等待选择县市（可在本页或「种植技术」页选择）。';
+        document.getElementById('weatherAlertGrid').innerHTML = '<div class="col-span-full text-center text-gray-400 text-sm py-10">选择县市后自动评估积温、干旱、热害、冷害、渍涝、大风与病害气象风险。</div>';
+        return;
+    }
+    if (!weatherData || weatherData.town.id !== currentTown.id) {
+        statusEl.innerHTML = '<span class="status-dot"></span> 正在加载 ' + currentTown.name + ' 气象数据...';
+        loadWeatherData().then(() => { weatherRefresh(); })
+            .catch(e => { statusEl.innerHTML = '<span class="text-red-600">⚠ 数据获取失败：' + e.message + '</span>'; });
+        return;
+    }
+    const town = weatherData.town;
+    const days = weatherData.days;
+    const lastActual = days.filter(d => d.src === '实况').slice(-1)[0];
+    statusEl.innerHTML = '<span class="status-dot"></span> ' + town.province + ' · ' + town.name +
+        ' ｜ 实况至 ' + (lastActual ? lastActual.date : '-') + ' ｜ 预报 ' + days.filter(d => d.src === '预报').length + ' 天 ｜ 数据源: OpenWeatherMap/GitHub Actions 每日更新';
+
+    renderWeatherAlerts(days, town);
+    renderWeatherCharts(days);
+    renderWeatherDaily(days);
+}
+
+/* 预警引擎：返回 [ {level:'red'|'yellow'|'green', title, detail, advice} ] */
+function assessWeather(days, town) {
+    const alerts = [];
+    const now = new Date(); now.setHours(0,0,0,0);
+    const sd = document.getElementById('sowDate').value;
+    const total = getTotalDays();
+
+    // 1. 积温进度（活动积温口径，从稳定通过10℃日起算，与公告区划口径一致）
+    const gddStart = gddStartDate();
+    const cumDays = days.filter(d => !gddStart || new Date(d.date) >= gddStart);
+    const cum = cumDays.reduce((a, d) => a + d.gddActive, 0);
+    const targetGDD = getTotalGDD() + 10 * getTotalDays();  // 有效积温预算 → 活动积温预算（区划对比用）
+    const pct = Math.round(cum / targetGDD * 100);
+    if (pct < 30) alerts.push({ level: 'yellow', title: '积温偏少', detail: '当前累计≥10℃活动积温 ' + Math.round(cum) + '℃·d，仅为品种区划需求(' + Math.round(targetGDD) + ')的 ' + pct + '%。', advice: '关注后期积温补充；若生育期滞后，提前准备促熟措施（叶喷磷二+芸苔素）。' });
+    else if (pct >= 100) alerts.push({ level: 'green', title: '积温充足', detail: '累计活动积温 ' + Math.round(cum) + '℃·d，已达品种区划需求。', advice: '正常推进农事，防早衰。' });
+    else alerts.push({ level: 'green', title: '积温正常', detail: '累计活动积温 ' + Math.round(cum) + '℃·d，占品种区划需求 ' + pct + '%。', advice: '按生育进程正常管理。' });
+
+    // 2. 当前生育期水分收支（近10天）
+    const stage = getStageNow();
+    const kc = stage ? stage.kc : 1.0;
+    const recent = days.slice(-10).filter(d => isFinite(d.et0));
+    if (recent.length >= 5) {
+        const rainSum = recent.reduce((a, d) => a + d.rain, 0);
+        const needSum = recent.reduce((a, d) => a + (d.et0 || 0) * kc, 0);
+        const balance = rainSum - needSum;
+        const stageName = stage ? stage.name : '当前';
+        if (balance < -30) alerts.push({ level: 'red', title: '水分亏缺', detail: '近10天降水 ' + rainSum.toFixed(0) + 'mm，' + stageName + '需水约 ' + needSum.toFixed(0) + 'mm（Kc=' + kc + '），亏缺 ' + (-balance).toFixed(0) + 'mm。', advice: '优先灌溉！' + (stage && stage.key === 'tassel' ? '抽雄吐丝期为水分临界期，干旱每天减产3-8%。' : '') + '灌溉约' + Math.round(-balance * 0.667) + '方/亩。' });
+        else if (balance < -10) alerts.push({ level: 'yellow', title: '水分偏紧', detail: '近10天水分亏缺 ' + (-balance).toFixed(0) + 'mm。', advice: '关注墒情，近期酌情补水，结合8天预报降雨安排灌溉。' });
+        else alerts.push({ level: 'green', title: '水分平衡', detail: '近10天降水 ' + rainSum.toFixed(0) + 'mm，基本满足 ' + stageName + ' 需水。', advice: '保持关注，无需灌溉。' });
+    }
+
+    // 3. 高温热害（抽雄期 + 预报）
+    const tasselDays = days.filter(d => { const st = getStageByDate(d.date); return st && (st.key === 'tassel' || st.key === 'bellmouth'); });
+    const hot = tasselDays.filter(d => d.tmax >= 32);
+    const hotForecast = days.filter(d => d.src === '预报' && d.tmax >= 32);
+    if (hot.length >= 3 || hotForecast.length >= 2) {
+        alerts.push({ level: 'red', title: '高温热害风险', detail: (hot.length ? '已出现 ' + hot.length + ' 天 Tmax≥32℃；' : '') + '未来 ' + hotForecast.length + ' 天预报 ≥32℃。抽雄期高温致花粉活力下降、授粉不良。', advice: '高温时段(11-15时)避免作业；上午9-10点人工辅助授粉；叶面喷施硼+磷酸二氢钾+芸苔素保授粉；有灌溉条件者喷灌降温。' });
+    } else if (hot.length >= 1 || hotForecast.length >= 1) {
+        alerts.push({ level: 'yellow', title: '高温关注', detail: (hot.length ? '已出现 ' + hot.length + ' 天' : '') + (hotForecast.length ? '，未来 ' + hotForecast.length + ' 天预报 Tmax≥32℃' : '') + '。', advice: '监测抽雄期天气，提前备好人工授粉与叶面喷肥。' });
+    }
+
+    // 4. 低温冷害（苗期 + 初霜）
+    const coldSeedling = days.filter(d => { const st = getStageByDate(d.date); return st && st.key === 'seedling' && d.tmin <= 4; });
+    if (coldSeedling.length) alerts.push({ level: 'yellow', title: '苗期低温', detail: '苗期出现 ' + coldSeedling.length + ' 天 Tmin≤4℃（如 ' + coldSeedling.slice(-1)[0].date + '）。低温易致苗弱、紫苗、生长停滞。', advice: '低温后及时中耕提温；叶面喷芸苔素内酯+氨基酸缓解；严重冻害需查苗补种。' });
+    const frostFc = days.filter(d => d.src === '预报' && d.tmin <= 0);
+    if (frostFc.length) alerts.push({ level: 'yellow', title: '霜冻预警(预报)', detail: '未来 ' + frostFc.length + ' 天预报 Tmin≤0℃（' + frostFc.map(d => d.date.slice(5)).join('、') + '）。若处灌浆后期将影响灌浆与成熟。', advice: '关注实际降温；若临近收获可提前采收；有灌溉条件霜前灌水增温。' });
+
+    // 5. 渍涝
+    const heavyRain = days.filter(d => d.rain >= 50);
+    const soggy = days.filter((d, i) => i >= 2 && d.rain + (days[i-1] ? days[i-1].rain : 0) + (days[i-2] ? days[i-2].rain : 0) >= 100);
+    if (heavyRain.length || soggy.length) {
+        alerts.push({ level: 'red', title: '渍涝风险', detail: (heavyRain.length ? '单日≥50mm：' + heavyRain.map(d => d.date.slice(5) + ' ' + d.rain.toFixed(0) + 'mm').join('、') + '。' : '') + (soggy.length ? '连续3日累计≥100mm。' : ''), advice: '及时清沟排水，雨后中耕松土；受涝田块追施速效氮促恢复；淹水超2-4天根系受损重。' });
+    }
+
+    // 6. 大风倒伏（灌浆期）
+    const gustDays = days.filter(d => d.src === '预报' && d.gust >= 10);
+    if (gustDays.length) {
+        const fillStage = getStageByDate(gustDays[0].date);
+        alerts.push({ level: fillStage && (fillStage.key === 'filling' || fillStage.key === 'tassel') ? 'red' : 'yellow', title: '大风风险', detail: '未来 ' + gustDays.map(d => d.date.slice(5) + ' 阵风' + d.gust + 'm/s').join('、') + '。' + (fillStage ? '处于' + fillStage.name + '。' : ''), advice: '倒伏风险高时暂缓追肥与喷药；已倒伏轻度的可人工扶正培土；灌浆期大风后查田防霉变。' });
+    }
+
+    // 7. 病害气象指数（湿度+温度窗口）
+    const diseaseDays = days.filter(d => {
+        if (d.src !== '预报' || d.humidity == null) return false;
+        return (d.tavg >= 22 && d.tavg <= 28 && d.humidity >= 85) || (d.rain >= 10 && d.tavg >= 20);
+    });
+    if (diseaseDays.length >= 2) {
+        alerts.push({ level: 'yellow', title: '病害气象窗口', detail: '未来 ' + diseaseDays.length + ' 天满足高湿适温（22-28℃+湿度≥85%或明显降水）条件，利于玉米大斑病/南方锈病等侵染。', advice: '结合生育期提前预防：大喇叭口-灌浆期可喷吡唑醚菌酯/苯醚甲环唑等；雨后及时查田。' });
+    }
+
+    // 8. 播种适期提示（春季，五日滑动平均判定稳定通过）
+    if (stablePassInfo && new Date(stablePassInfo.date) >= new Date()) {
+        alerts.push({ level: 'green', title: '播种窗口开启', detail: '日均温五日滑动平均已稳定通过10℃（' + stablePassInfo.date + ' 起），达到春玉米安全播种温度条件。', advice: '5-10cm地温稳定通过10-12℃后抢墒播种。' });
+    }
+
+    // 汇总
+    const red = alerts.filter(a => a.level === 'red').length;
+    const yellow = alerts.filter(a => a.level === 'yellow').length;
+    alerts.unshift({ level: red > 0 ? 'red' : (yellow > 0 ? 'yellow' : 'green'), title: '综合评估', detail: '检出红色预警 ' + red + ' 项、黄色 ' + yellow + ' 项' + (red === 0 && yellow === 0 ? '，当前气象条件总体适宜。' : '，需重点关注。'), advice: '以下为逐项详情与处置建议（仅供参考）。' });
+    return alerts;
+}
+
+function getStageNow() {
+    const sd = document.getElementById('sowDate').value;
+    if (!sd) return null;
+    const total = getTotalDays();
+    const base = growthBaseDate();
+    if (!base) return null;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const frac = Math.floor((today - base) / 86400000) / total;
+    if (frac < 0 || frac > 1) return null;
+    for (const st of STAGES) if (frac >= st.start && frac <= st.end) return st;
+    return null;
+}
+
+function getStageByDate(dateStr) {
+    const sd = document.getElementById('sowDate').value;
+    if (!sd) return null;
+    const total = getTotalDays();
+    const base = growthBaseDate();
+    if (!base) return null;
+    const frac = Math.floor((new Date(dateStr) - base) / 86400000) / total;
+    if (frac < 0 || frac > 1) return null;
+    for (const st of STAGES) if (frac >= st.start && frac <= st.end) return st;
+    return null;
+}
+
+function renderWeatherAlerts(days, town) {
+    const grid = document.getElementById('weatherAlertGrid');
+    const alerts = assessWeather(days, town);
+    const levelCfg = {
+        red:    { bg: 'bg-red-50',   border: 'border-red-300',  badge: 'bg-red-500',  title: 'text-red-800',  detail: 'text-red-700',  adv: 'bg-red-100 text-red-800' },
+        yellow: { bg: 'bg-amber-50', border: 'border-amber-300', badge: 'bg-amber-500', title: 'text-amber-800', detail: 'text-amber-700', adv: 'bg-amber-100 text-amber-800' },
+        green:  { bg: 'bg-green-50', border: 'border-green-300', badge: 'bg-green-500', title: 'text-green-800', detail: 'text-green-700', adv: 'bg-green-100 text-green-800' }
+    };
+    grid.innerHTML = alerts.map(a => {
+        const c = levelCfg[a.level];
+        const label = a.level === 'red' ? '红色预警' : a.level === 'yellow' ? '黄色提醒' : '正常';
+        return '<div class="' + c.bg + ' rounded-xl p-4 border-l-4 ' + c.border + '">' +
+            '<div class="flex items-center gap-2 mb-1"><span class="' + c.badge + ' text-white text-sm px-2 py-0.5 rounded-full font-bold">' + label + '</span>' +
+            '<h4 class="font-bold text-sm ' + c.title + '">' + a.title + '</h4></div>' +
+            '<p class="text-[13px] ' + c.detail + ' leading-relaxed mb-2">' + a.detail + '</p>' +
+            '<p class="text-[13px] ' + c.adv + ' rounded p-2 leading-relaxed">💡 ' + a.advice + '</p></div>';
+    }).join('');
+}
+
+function renderWeatherCharts(days) {
+    const labels = days.map(d => d.date.slice(5));
+    const cum = [];
+    let acc = 0;
+    const gddStart = gddStartDate();
+    days.forEach(d => {
+        if (gddStart && new Date(d.date) < gddStart) { cum.push(null); return; }  // 稳定通过前不计
+        acc += d.gddActive;                                                       // 活动积温口径
+        cum.push(Math.round(acc));
+    });
+    const srcs = days.map(d => d.src);
+
+    // 积温曲线（活动积温口径）
+    const gctx = document.getElementById('gddChart').getContext('2d');
+    if (gddChart) gddChart.destroy();
+    gddChart = new Chart(gctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '累计活动积温(℃·d)',
+                data: cum,
+                borderColor: '#0ea5e9', backgroundColor: 'rgba(14,165,233,0.08)',
+                fill: true, tension: 0.3, pointRadius: 1, spanGaps: false
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true, title: { display: true, text: '℃·d' } } },
+            plugins: { legend: { display: false } }
+        }
+    });
+    // 实况/预报分界虚线标注
+    const splitIdx = srcs.findIndex(s => s === '预报');
+    if (splitIdx > 0) {
+        const note = document.getElementById('gddChartNote');
+        note.textContent = '实线=实况 · 虚线=预报（' + days[splitIdx].date + ' 起，8天截止）｜活动积温口径，从稳定通过10℃(' + (gddStart ? gddStart.toISOString().slice(0,10) : '—') + ')起累计';
+    }
+
+    // 水分收支
+    const wctx = document.getElementById('waterChart').getContext('2d');
+    if (waterChart) waterChart.destroy();
+    const kcDays = days.map(d => { const st = getStageByDate(d.date); return st ? st.kc : 1.0; });
+    const need = days.map((d, i) => isFinite(d.et0) ? Math.round(d.et0 * kcDays[i] * 10) / 10 : null);
+    waterChart = new Chart(wctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: '降水(mm)', data: days.map(d => d.rain), backgroundColor: '#38bdf8', borderRadius: 2 },
+                { label: '需水 Kc×ET₀(mm)', data: need, type: 'line', borderColor: '#f59e0b', tension: 0.3, pointRadius: 1, yAxisID: 'y' }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true, title: { display: true, text: 'mm' } } },
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } }
+        }
+    });
+}
+
+function renderWeatherDaily(days) {
+    const tbody = document.getElementById('weatherDailyBody');
+    const recent = days.slice(-22);
+    const sd = document.getElementById('sowDate').value;
+    tbody.innerHTML = recent.map(d => {
+        const st = getStageByDate(d.date);
+        const kc = st ? st.kc : null;
+        const need = isFinite(d.et0) && kc ? (d.et0 * kc) : null;
+        const bal = need != null ? (d.rain - need) : null;
+        const balCls = bal != null ? (bal < -5 ? 'text-red-600' : bal > 5 ? 'text-blue-600' : 'text-gray-500') : 'text-gray-400';
+        return '<tr class="border-b hover:bg-gray-50">' +
+            '<td class="p-2 border text-left font-mono">' + d.date + (d.src === '预报' ? '<span class="ml-1 text-[9px] bg-amber-100 text-amber-700 px-1 rounded">预报</span>' : '') + '</td>' +
+            '<td class="p-2 border text-right">' + (isFinite(d.tmin) ? d.tmin.toFixed(1) : '-') + '</td>' +
+            '<td class="p-2 border text-right">' + (isFinite(d.tmax) ? d.tmax.toFixed(1) : '-') + '</td>' +
+            '<td class="p-2 border text-right">' + (isFinite(d.tavg) ? d.tavg.toFixed(1) : '-') + '</td>' +
+            '<td class="p-2 border text-right">' + (isFinite(d.rain) ? d.rain.toFixed(1) : '-') + '</td>' +
+            '<td class="p-2 border text-right">' + (isFinite(d.et0) ? d.et0.toFixed(1) : '-') + '</td>' +
+            '<td class="p-2 border text-right">' + (kc != null ? kc.toFixed(2) : '-') + '</td>' +
+            '<td class="p-2 border text-right font-bold ' + balCls + '">' + (bal != null ? (bal >= 0 ? '+' : '') + bal.toFixed(1) : '-') + '</td>' +
+            '<td class="p-2 border text-left">' + (st ? st.name : '—') + '</td>' +
+            '<td class="p-2 border text-left">' + d.src + '</td></tr>';
+    }).join('');
+}
+
+/* ================= 初始化 ================= */
+window.onload = function () {
+    // 播种日期默认当年5月1日（东北春玉米播种集中期）
+    const today = new Date();
+    const y = today.getFullYear();
+    document.getElementById('sowDate').value = y + '-05-01';
+    fillTownSelects();
+    renderFertOptions();
+    renderProcess();
+    renderFullProtection('all');
+    updateCropProfile();
+    updatePlantingCalc();
+    calculateAll();
+    renderDualTrack();
+    ensureVarietyDB();     // 预热品种库
+    ensureStandard2025().then(() => {
+        // 标准曲线就绪后重算双轨（若已有区域/播种日期）
+        if (currentTown && weatherData && weatherData.town.id === currentTown.id) renderDualTrack();
+    });
+};
+</script>
+</body>
+</html>
